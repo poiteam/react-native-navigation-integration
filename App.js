@@ -29,6 +29,8 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
+const {PoilabsNavigationModule} = NativeModules;
+
 const Section = ({children, title}): Node => {
   const isDarkMode = useColorScheme() === 'dark';
   return (
@@ -89,7 +91,7 @@ const App: () => Node = () => {
 <Button
           title="Start Navigation Android"
           onPress={() => {
-            NavigationModule.startNavigation();
+            PoilabsNavigationModule.startNavigation();
           }
             
           }

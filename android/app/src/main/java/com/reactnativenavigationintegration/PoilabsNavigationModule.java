@@ -7,15 +7,14 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 
-
-public class NavigationModule extends ReactContextBaseJavaModule {
-    NavigationModule(ReactApplicationContext context) {
+public class PoilabsNavigationModule extends ReactContextBaseJavaModule {
+    PoilabsNavigationModule(ReactApplicationContext context) {
         super(context);
     }
 
     @Override
     public String getName() {
-        return "NavigationModule";
+        return "PoilabsNavigationModule";
     }
 
     @ReactMethod
@@ -27,3 +26,4 @@ public class NavigationModule extends ReactContextBaseJavaModule {
     }
 
 }
+
