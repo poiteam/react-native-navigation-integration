@@ -64,17 +64,17 @@ Create a **Storyboard** file named **Main**. New storyboard will start with a ui
 
 ## Android
 
-Create a java file named **NavigationModule** with content below.
+Create a java file named ** PoilabsNavigationModule** with content below.
 
 ```Java
-public class NavigationModule extends ReactContextBaseJavaModule {
-    NavigationModule(ReactApplicationContext context) {
+public class PoilabsNavigationModule extends ReactContextBaseJavaModule {
+    PoilabsNavigationModule(ReactApplicationContext context) {
         super(context);
     }
 
     @Override
     public String getName() {
-        return "NavigationModule";
+        return "PoilabsNavigationModule";
     }
 
     @ReactMethod
@@ -102,11 +102,26 @@ public class NavigationPackage implements ReactPackage {
             ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
 
-        modules.add(new NavigationModule(reactContext));
+        modules.add(new PoilabsNavigationModule(reactContext));
 
         return modules;
     }
 }
+```
+
+Open up your MainApplication.java file, which can be found in the following path: android/app/src/main/java/com/your-app-name/MainApplication.java
+
+Locate ReactNativeHost’s getPackages() method and add your package to the packages list getPackages() returns:
+
+```Java
+@Override
+  protected List<ReactPackage> getPackages() {
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    List<ReactPackage> packages = new PackageList(this).getPackages();
+    // below MyAppPackage is added to the list of packages returned
+    packages.add(new NavigationPackage());
+    return packages;
+  }
 ```
 
 Create a java file named **HomeActivity**. For implementation, **follow all steps** of native Android documentation.
@@ -116,7 +131,7 @@ Create a java file named **HomeActivity**. For implementation, **follow all step
 You should import **NativeModules** and define NavigationModule
 
 ```js
-const { NavigationModule } = NativeModules;
+const { PoilabsNavigationModule } = NativeModules;
 ```
 You can call PoilabsNavigation with codes below.
 
@@ -128,5 +143,5 @@ NativeModules.PoilabsNavigationBridge.startPoilabsNavigation();
 **Android**
 
 ```js
-NavigationModule.startNavigation();
+PoilabsNavigationModule.startNavigation();
 ```
