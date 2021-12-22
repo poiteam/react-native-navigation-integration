@@ -78,6 +78,7 @@ const App: () => Node = () => {
           <Section title="Step One">
             Edit <Text style={styles.highlight}>App.js</Text> to change this
             screen and then come back to see your edits.
+            <Section>
             <Button
           title="Start Navigation iOS"
           onPress={() => {
@@ -87,15 +88,38 @@ const App: () => Node = () => {
             
           }
         />
+        </Section>
 
+<Section>
 <Button
           title="Start Navigation Android"
           onPress={() => {
-            PoilabsNavigationModule.startNavigation();
+            PoilabsNavigationModule.startNavigation("tr");
           }
             
           }
         />
+        </Section>
+        <Section>
+<Button
+          title="Show points on map android"
+          onPress={() => {
+            PoilabsNavigationModule.showStoresOnMap(["2151001","2190501"],"tr");
+          }
+            
+          }
+        />
+        </Section>
+        <Section>
+<Button
+          title="Navigate to point on map android"
+          onPress={() => {
+            PoilabsNavigationModule.navigateToStore("2012001","tr");
+          }
+            
+          }
+        />
+        </Section>
           </Section>
           <Section title="See Your Changes">
             <ReloadInstructions />
