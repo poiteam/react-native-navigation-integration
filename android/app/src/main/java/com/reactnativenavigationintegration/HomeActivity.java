@@ -2,36 +2,20 @@ package com.reactnativenavigationintegration;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.view.Menu;
 import android.widget.Toast;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.navigation.NavigationView;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.ui.AppBarConfiguration;
+
 import com.poilabs.navigation.model.PoiNavigation;
 import com.poilabs.navigation.model.PoiSdkConfig;
 import com.poilabs.navigation.view.fragments.MapFragment;
 
-import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.AppCompatActivity;
-
-import org.jetbrains.annotations.Nullable;
-
-
-import static androidx.core.app.ActivityCompat.requestPermissions;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class HomeActivity extends AppCompatActivity {
@@ -44,13 +28,11 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
-        startNavigation();
+        askLocalPermission();
 
     }
 
-    private void startNavigation() {
-        String localeLanguage = "tr";
+    private void startNavigation(String language) {
 
 
         PoiSdkConfig poiSdkConfig = new PoiSdkConfig(
@@ -60,7 +42,7 @@ public class HomeActivity extends AppCompatActivity {
         );
         PoiNavigation.getInstance(
                 this,
-                localeLanguage,
+                language,
                 poiSdkConfig
         ).bind(new PoiNavigation.OnNavigationReady() {
             @Override
@@ -70,7 +52,12 @@ public class HomeActivity extends AppCompatActivity {
 
             @Override
             public void onStoresReady() {
-                PoiNavigation.getInstance().showPointsOnMap(Arrays.asList("AVB1160"));
+                if (getIntent().getStringExtra("navigateToStore")!=null) {
+                    PoiNavigation.getInstance().navigateToStore(getIntent().getStringExtra("navigateToStore"));
+                }
+                if (getIntent().getStringArrayListExtra("showStores") != null) {
+                    PoiNavigation.getInstance().showPointsOnMap(getIntent().getStringArrayListExtra("showStores"));
+                }
             }
         });
 
@@ -84,8 +71,19 @@ public class HomeActivity extends AppCompatActivity {
             requestPermissions(new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
 
         } else {
-            startNavigation();
+            String lan = getIntent().getStringExtra("language");
+            if (lan == null) {
+                lan = "en";
+            }
+            startNavigation(lan);
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1) {
+            askLocalPermission();
+        }
+    }
 }
