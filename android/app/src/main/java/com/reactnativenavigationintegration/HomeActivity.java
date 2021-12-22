@@ -52,12 +52,17 @@ public class HomeActivity extends AppCompatActivity {
 
             @Override
             public void onStoresReady() {
-                if (getIntent().getStringExtra("navigateToStore")!=null) {
-                    PoiNavigation.getInstance().navigateToStore(getIntent().getStringExtra("navigateToStore"));
-                }
-                if (getIntent().getStringArrayListExtra("showStores") != null) {
-                    PoiNavigation.getInstance().showPointsOnMap(getIntent().getStringArrayListExtra("showStores"));
-                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (getIntent().getStringExtra("navigateToStore")!=null) {
+                            PoiNavigation.getInstance().navigateToStore(getIntent().getStringExtra("navigateToStore"));
+                        }
+                        if (getIntent().getStringArrayListExtra("showStores") != null) {
+                            PoiNavigation.getInstance().showPointsOnMap(getIntent().getStringArrayListExtra("showStores"));
+                        }
+                    }
+                });
             }
         });
 
