@@ -17,8 +17,8 @@ class NavigationViewController: UIViewController {
         super.viewDidLoad()
 
       PLNNavigationSettings.sharedInstance().mallId = "PLACE_TITLE"
-      PLNNavigationSettings.sharedInstance().applicationId = "APPLICATION_ID"
-      PLNNavigationSettings.sharedInstance().applicationSecret = "APPLICATION_SECRET_KEY"
+      PLNNavigationSettings.sharedInstance().applicationId = "ae009a0f-524f-45bb-ae21-ba07914c4f16"
+      PLNNavigationSettings.sharedInstance().applicationSecret = "ae009a0f-524f-45bb-ae21-ba07914c4f16"
 
       PLNavigationManager.sharedInstance()?.getReadyForStoreMap(completionHandler: { (error) in
         if error == nil {

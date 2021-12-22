@@ -82,7 +82,7 @@ const App: () => Node = () => {
           title="Start Navigation iOS"
           onPress={() => {
             console.log('We will invoke the native module here!');
-            NativeModules.PoilabsNavigationBridge.startPoilabsNavigation();
+            NativeModules.PoilabsNavigationBridge.startPoilabsNavigation("tr");
           }
             
           }
