@@ -11,12 +11,13 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		73BE8EEE678DFAC605ACF3CA /* Pods_reactNativeNavigationIntegration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08B7FEBE14C6CDBDFDF84CD2 /* Pods_reactNativeNavigationIntegration.framework */; };
+		6685CEA4F69E44C849DDB2C6 /* Pods_reactNativeNavigationIntegration_reactNativeNavigationIntegrationTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F13375BBD403138E0FF23469 /* Pods_reactNativeNavigationIntegration_reactNativeNavigationIntegrationTests.framework */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		C3BFF9F727213D9F00DAFB45 /* NavigationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BFF9F627213D9F00DAFB45 /* NavigationViewController.swift */; };
-		C3BFF9F92721462E00DAFB45 /* PoilabsNavigationBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = C3BFF9F82721462E00DAFB45 /* PoilabsNavigationBridge.m */; };
+		C30D776E277344A60050CB1F /* PoilabsMapManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C30D776D277344A60050CB1F /* PoilabsMapManager.m */; };
+		C30D7770277346D10050CB1F /* NavigationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30D776F277346D10050CB1F /* NavigationView.swift */; };
+		C30D777227744D010050CB1F /* PoilabsNavigationBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = C30D777127744D010050CB1F /* PoilabsNavigationBridge.m */; };
 		C3BFF9FC27214E6200DAFB45 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C3BFF9FB27214E6200DAFB45 /* Main.storyboard */; };
-		CC68439914F2ACD53E6F38B5 /* Pods_reactNativeNavigationIntegration_reactNativeNavigationIntegrationTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E104C9BE2A4D3C020654371 /* Pods_reactNativeNavigationIntegration_reactNativeNavigationIntegrationTests.framework */; };
+		F955FB5D78FEE34759C6EF95 /* Pods_reactNativeNavigationIntegration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF25B96BDD4656F8794BB5F4 /* Pods_reactNativeNavigationIntegration.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -33,7 +34,6 @@
 		00E356EE1AD99517003FC87E /* reactNativeNavigationIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = reactNativeNavigationIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* reactNativeNavigationIntegrationTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = reactNativeNavigationIntegrationTests.m; sourceTree = "<group>"; };
-		08B7FEBE14C6CDBDFDF84CD2 /* Pods_reactNativeNavigationIntegration.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_reactNativeNavigationIntegration.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07F961A680F5B00A75B9A /* reactNativeNavigationIntegration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = reactNativeNavigationIntegration.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = reactNativeNavigationIntegration/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = reactNativeNavigationIntegration/AppDelegate.m; sourceTree = "<group>"; };
@@ -43,15 +43,17 @@
 		4457A33D1E3036A2E38E4FA2 /* Pods-reactNativeNavigationIntegration-reactNativeNavigationIntegrationTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-reactNativeNavigationIntegration-reactNativeNavigationIntegrationTests.release.xcconfig"; path = "Target Support Files/Pods-reactNativeNavigationIntegration-reactNativeNavigationIntegrationTests/Pods-reactNativeNavigationIntegration-reactNativeNavigationIntegrationTests.release.xcconfig"; sourceTree = "<group>"; };
 		4A9F90EC7FC9E2A58DA93031 /* Pods-reactNativeNavigationIntegration-reactNativeNavigationIntegrationTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-reactNativeNavigationIntegration-reactNativeNavigationIntegrationTests.debug.xcconfig"; path = "Target Support Files/Pods-reactNativeNavigationIntegration-reactNativeNavigationIntegrationTests/Pods-reactNativeNavigationIntegration-reactNativeNavigationIntegrationTests.debug.xcconfig"; sourceTree = "<group>"; };
 		6886493666D04F50A94E8793 /* Pods-reactNativeNavigationIntegration.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-reactNativeNavigationIntegration.release.xcconfig"; path = "Target Support Files/Pods-reactNativeNavigationIntegration/Pods-reactNativeNavigationIntegration.release.xcconfig"; sourceTree = "<group>"; };
-		6E104C9BE2A4D3C020654371 /* Pods_reactNativeNavigationIntegration_reactNativeNavigationIntegrationTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_reactNativeNavigationIntegration_reactNativeNavigationIntegrationTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = reactNativeNavigationIntegration/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BCA0C62B57DA121FB1C2D4A3 /* Pods-reactNativeNavigationIntegration.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-reactNativeNavigationIntegration.debug.xcconfig"; path = "Target Support Files/Pods-reactNativeNavigationIntegration/Pods-reactNativeNavigationIntegration.debug.xcconfig"; sourceTree = "<group>"; };
+		C30D776D277344A60050CB1F /* PoilabsMapManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = PoilabsMapManager.m; path = reactNativeNavigationIntegration/PoilabsMapManager.m; sourceTree = "<group>"; };
+		C30D776F277346D10050CB1F /* NavigationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationView.swift; sourceTree = "<group>"; };
+		C30D777127744D010050CB1F /* PoilabsNavigationBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PoilabsNavigationBridge.m; sourceTree = "<group>"; };
+		C30D777327744D240050CB1F /* PoilabsNavigationBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PoilabsNavigationBridge.h; sourceTree = "<group>"; };
 		C3BFF9F527213D9F00DAFB45 /* reactNativeNavigationIntegration-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "reactNativeNavigationIntegration-Bridging-Header.h"; sourceTree = "<group>"; };
-		C3BFF9F627213D9F00DAFB45 /* NavigationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationViewController.swift; sourceTree = "<group>"; };
-		C3BFF9F82721462E00DAFB45 /* PoilabsNavigationBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PoilabsNavigationBridge.m; sourceTree = "<group>"; };
-		C3BFF9FA2721464300DAFB45 /* PoilabsNavigationBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PoilabsNavigationBridge.h; sourceTree = "<group>"; };
 		C3BFF9FB27214E6200DAFB45 /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		EF25B96BDD4656F8794BB5F4 /* Pods_reactNativeNavigationIntegration.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_reactNativeNavigationIntegration.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F13375BBD403138E0FF23469 /* Pods_reactNativeNavigationIntegration_reactNativeNavigationIntegrationTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_reactNativeNavigationIntegration_reactNativeNavigationIntegrationTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,7 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CC68439914F2ACD53E6F38B5 /* Pods_reactNativeNavigationIntegration_reactNativeNavigationIntegrationTests.framework in Frameworks */,
+				6685CEA4F69E44C849DDB2C6 /* Pods_reactNativeNavigationIntegration_reactNativeNavigationIntegrationTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -67,7 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				73BE8EEE678DFAC605ACF3CA /* Pods_reactNativeNavigationIntegration.framework in Frameworks */,
+				F955FB5D78FEE34759C6EF95 /* Pods_reactNativeNavigationIntegration.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -100,11 +102,12 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
-				C3BFF9F627213D9F00DAFB45 /* NavigationViewController.swift */,
 				C3BFF9F527213D9F00DAFB45 /* reactNativeNavigationIntegration-Bridging-Header.h */,
-				C3BFF9F82721462E00DAFB45 /* PoilabsNavigationBridge.m */,
-				C3BFF9FA2721464300DAFB45 /* PoilabsNavigationBridge.h */,
 				C3BFF9FB27214E6200DAFB45 /* Main.storyboard */,
+				C30D776D277344A60050CB1F /* PoilabsMapManager.m */,
+				C30D776F277346D10050CB1F /* NavigationView.swift */,
+				C30D777127744D010050CB1F /* PoilabsNavigationBridge.m */,
+				C30D777327744D240050CB1F /* PoilabsNavigationBridge.h */,
 			);
 			name = reactNativeNavigationIntegration;
 			sourceTree = "<group>";
@@ -113,8 +116,8 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				08B7FEBE14C6CDBDFDF84CD2 /* Pods_reactNativeNavigationIntegration.framework */,
-				6E104C9BE2A4D3C020654371 /* Pods_reactNativeNavigationIntegration_reactNativeNavigationIntegrationTests.framework */,
+				EF25B96BDD4656F8794BB5F4 /* Pods_reactNativeNavigationIntegration.framework */,
+				F13375BBD403138E0FF23469 /* Pods_reactNativeNavigationIntegration_reactNativeNavigationIntegrationTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -424,10 +427,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C3BFF9F727213D9F00DAFB45 /* NavigationViewController.swift in Sources */,
+				C30D776E277344A60050CB1F /* PoilabsMapManager.m in Sources */,
+				C30D777227744D010050CB1F /* PoilabsNavigationBridge.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
-				C3BFF9F92721462E00DAFB45 /* PoilabsNavigationBridge.m in Sources */,
+				C30D7770277346D10050CB1F /* NavigationView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

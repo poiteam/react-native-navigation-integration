@@ -51,12 +51,6 @@ static void InitializeFlipper(UIApplication *application) {
   return YES;
 }
 
--(void)showNavigationViewController {
-  UIViewController *vc = [UIStoryboard storyboardWithName:@"Main" bundle:nil].instantiateInitialViewController;
-  vc.modalPresentationStyle = UIModalPresentationFullScreen;
-  [self.window.rootViewController presentViewController:vc animated:true completion:nil];
-}
-
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
 {
 #if DEBUG

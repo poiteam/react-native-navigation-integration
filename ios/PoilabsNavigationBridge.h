@@ -12,7 +12,8 @@
 
 @interface PoilabsNavigationBridge : NSObject <RCTBridgeModule>
 
--(void) startPoilabsNavigation;
+-(void) showPointOnMap:(NSString *)storeId;
+-(void) getRouteTo:(NSString *)storeId;
 
 @end
 #endif /* PoilabsNavigationBridge_h */

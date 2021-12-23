@@ -7,6 +7,7 @@
  */
 
 import React from 'react';
+import { useEffect, useRef } from 'react';
 import type {Node} from 'react';
 import {
   SafeAreaView,
@@ -17,45 +18,23 @@ import {
   useColorScheme,
   View,
   NativeModules,
-  Button
+  Button,
+  PixelRatio
 } from 'react-native';
 
-
+import MapView from './MapView.js';
 import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
+  Colors
 } from 'react-native/Libraries/NewAppScreen';
 
-const {PoilabsNavigationModule} = NativeModules;
+import { PoiMapViewManager } from './PoiMapViewManager';
+import { UIManager, findNodeHandle } from 'react-native';
 
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-};
+if(Platform.OS === 'ios') {
+
+}
+
+
 
 const App: () => Node = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -64,95 +43,77 @@ const App: () => Node = () => {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-            <Section>
-            <Button
-          title="Start Navigation iOS"
-          onPress={() => {
-            console.log('We will invoke the native module here!');
-            NativeModules.PoilabsNavigationBridge.startPoilabsNavigation();
-          }
-            
-          }
-        />
-        </Section>
 
-<Section>
-<Button
-          title="Start Navigation Android"
-          onPress={() => {
-            PoilabsNavigationModule.startNavigation("tr");
-          }
-            
-          }
-        />
-        </Section>
-        <Section>
-<Button
-          title="Show points on map android"
-          onPress={() => {
-            PoilabsNavigationModule.showStoresOnMap(["2151001","2190501"],"tr");
-          }
-            
-          }
-        />
-        </Section>
-        <Section>
-<Button
-          title="Navigate to point on map android"
-          onPress={() => {
-            PoilabsNavigationModule.navigateToStore("2012001","tr");
-          }
-            
-          }
-        />
-        </Section>
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+
+  if(Platform.OS === 'ios') {
+    return (
+      <View style={{flex: 1}}>
+          <View style={{height: 100, backgroundColor:"blue"}}/>
+          <MapView language={"en"} getRouteTo={"store_id"} showOnMap={"store_id"} style={{ flex: 1}}/>
+          <View style={{height: 100, backgroundColor:"blue"}}>
+          <Button
+            title="Show pin on map"
+            onPress={() => {
+              NativeModules.PoilabsNavigationBridge.showPointOnMap("store_id");
+            }
+            }
+          />
+            <Button
+            title="Get route"
+            onPress={() => {
+              NativeModules.PoilabsNavigationBridge.getRouteTo("store_id");
+            }
+            }
+          />
+          </View>
+      </View>
+    );
+  } else {
+    const createFragment = (viewId) =>
+  UIManager.dispatchViewManagerCommand(
+    viewId,
+    // we are calling the 'create' command
+    UIManager.PoiMapViewManager.Commands.create.toString(),
+    [viewId]
   );
+
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const viewId = findNodeHandle(ref.current);
+    createFragment(viewId);
+  }, []);
+    return (
+      <View style={{flex: 1}}>
+          <View style={{height: 100, backgroundColor:"blue"}}/>
+          <PoiMapViewManager
+          showPointOnMap = "store_id"
+          language = "en"
+        style={{
+          // converts dpi to px, provide desired height
+          height: PixelRatio.getPixelSizeForLayoutSize(500),
+          // converts dpi to px, provide desired width
+          width: PixelRatio.getPixelSizeForLayoutSize(500)
+        }}
+        ref={ref}
+      />
+          <View style={{height: 100, backgroundColor:"blue"}}>
+          </View>
+      </View>
+    );
+  }
+
+
+
 };
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  container: {
+    marginTop: 10,
+    padding: 10,
+    color: '#ff0000',
+    justifyContent: 'space-around',
+    flex:1
   },
 });
 
