@@ -5,5 +5,4 @@
 @interface AppDelegate : UIResponder <UIApplicationDelegate, RCTBridgeDelegate>
 
 @property (nonatomic, strong) UIWindow *window;
--(void)showNavigationViewController;
 @end
