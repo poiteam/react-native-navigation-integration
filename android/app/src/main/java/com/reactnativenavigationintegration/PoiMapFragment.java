@@ -96,11 +96,17 @@ public class PoiMapFragment extends Fragment {
 
             @Override
             public void onStoresReady() {
-                if (getRouteStoreId!=null) {
-                    PoiNavigation.getInstance().navigateToStore(getRouteStoreId);
-                }else if (showOnMapStoreId != null) {
-                    PoiNavigation.getInstance().showPointsOnMap(Arrays.asList(showOnMapStoreId));
-                }
+                requireActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (getRouteStoreId!=null) {
+                            PoiNavigation.getInstance().navigateToStore(getRouteStoreId);
+                        }else if (showOnMapStoreId != null) {
+                            PoiNavigation.getInstance().showPointsOnMap(Arrays.asList(showOnMapStoreId));
+                        }
+                    }
+                });
+
             }
         });
 
