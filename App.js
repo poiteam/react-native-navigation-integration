@@ -23,6 +23,7 @@ import {
   Colors
 } from 'react-native/Libraries/NewAppScreen';
 
+const { PoiMapModule } = NativeModules;
 
 const App: () => Node = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -62,6 +63,20 @@ const App: () => Node = () => {
           <View style={{height: 100, backgroundColor:"blue"}}/>
           <PoiMapView/>
           <View style={{height: 100, backgroundColor:"red"}}>
+          <Button
+            title="Show pin on map"
+            onPress={() => {
+              NativeModules.PoiMapModule.showPointOnMap(["2012001"]);
+            }
+            }
+          />
+            <Button
+            title="Get route"
+            onPress={() => {
+              NativeModules.PoiMapModule.getRouteTo("2012001");
+            }
+            }
+          />
           </View>
       </View>
     );

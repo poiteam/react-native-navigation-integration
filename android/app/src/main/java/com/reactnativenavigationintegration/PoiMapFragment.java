@@ -2,6 +2,10 @@ package com.reactnativenavigationintegration;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,12 +15,14 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 // replace with your view's import
 import com.poilabs.navigation.model.PoiNavigation;
 import com.poilabs.navigation.model.PoiSdkConfig;
 import com.poilabs.navigation.view.fragments.MapFragment;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class PoiMapFragment extends Fragment {
@@ -26,6 +32,40 @@ public class PoiMapFragment extends Fragment {
     private String language;
     private String showOnMapStoreId;
     private String getRouteStoreId;
+    private boolean isStoresReady = false;
+
+    private final BroadcastReceiver showOnMapReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            ArrayList<String> store_ids = intent.getStringArrayListExtra("store_ids");
+            if (isStoresReady) {
+                requireActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        PoiNavigation.getInstance().showPointsOnMap(store_ids);
+                    }
+                });
+            }
+        }
+    };
+
+    private final BroadcastReceiver navigateToStoreReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String storeId = intent.getStringExtra("store_id");
+            if (isStoresReady) {
+                requireActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        PoiNavigation.getInstance().navigateToStore(storeId);
+                    }
+                });
+            }
+
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
@@ -41,8 +81,11 @@ public class PoiMapFragment extends Fragment {
         showOnMapStoreId = getArguments().getString("showOnMapStoreId");
         askLocalPermission();
 
-        // do any logic that should happen in an `onCreate` method, e.g:
-        // customView.onCreate(savedInstanceState);
+        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(showOnMapReceiver,
+                new IntentFilter("show-on-map"));
+
+        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(navigateToStoreReceiver,
+                new IntentFilter("navigate-to-store"));
     }
 
     @Override
@@ -64,6 +107,13 @@ public class PoiMapFragment extends Fragment {
         super.onDestroy();
         // do any logic that should happen in an `onDestroy` method
         // e.g.: customView.onDestroy();
+    }
+
+    @Override
+    public void onDestroyView() {
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(showOnMapReceiver);
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(navigateToStoreReceiver);
+        super.onDestroyView();
     }
 
     public static PoiMapFragment newInstance(String language, String showOnMapStoreId, String getRouteStoreId) {
@@ -96,6 +146,7 @@ public class PoiMapFragment extends Fragment {
 
             @Override
             public void onStoresReady() {
+                isStoresReady = true;
                 requireActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

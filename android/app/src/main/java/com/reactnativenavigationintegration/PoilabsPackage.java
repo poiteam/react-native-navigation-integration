@@ -17,12 +17,12 @@ public class PoilabsPackage implements ReactPackage {
     @NonNull
     @Override
     public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
-        return Collections.emptyList();
+        return Collections.singletonList(new PoiMapModule(reactContext));
     }
 
     @NonNull
     @Override
     public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
-        return Arrays.<ViewManager>asList(new PoiMapViewManager(reactContext));
+        return Collections.singletonList(new PoiMapViewManager(reactContext));
     }
 }
