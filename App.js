@@ -27,15 +27,14 @@ import {
   Colors
 } from 'react-native/Libraries/NewAppScreen';
 
-import { PoiMapViewManager } from './PoiMapViewManager';
 import { UIManager, findNodeHandle } from 'react-native';
 
-if(Platform.OS === 'ios') {
 
-}
+import { requireNativeComponent } from 'react-native';
 
-
-
+export const PoiMapViewManager = requireNativeComponent(
+  'PoiMapViewManager'
+);
 const App: () => Node = () => {
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -89,15 +88,10 @@ const App: () => Node = () => {
           <PoiMapViewManager
           showPointOnMap = "store_id"
           language = "en"
-        style={{
-          // converts dpi to px, provide desired height
-          height: PixelRatio.getPixelSizeForLayoutSize(500),
-          // converts dpi to px, provide desired width
-          width: PixelRatio.getPixelSizeForLayoutSize(500)
-        }}
-        ref={ref}
+          style={{flex: 1}}
+          ref={ref}
       />
-          <View style={{height: 100, backgroundColor:"blue"}}>
+          <View style={{height: 100, backgroundColor:"red"}}>
           </View>
       </View>
     );

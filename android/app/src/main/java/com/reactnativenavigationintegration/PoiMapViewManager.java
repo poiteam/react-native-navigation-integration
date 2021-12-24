@@ -12,10 +12,9 @@ import androidx.fragment.app.FragmentActivity;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.common.MapBuilder;
-import com.facebook.react.uimanager.annotations.ReactProp;
-import com.facebook.react.uimanager.annotations.ReactPropGroup;
-import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.uimanager.ViewGroupManager;
+import com.facebook.react.uimanager.annotations.ReactProp;
 
 import java.util.Map;
 
@@ -23,8 +22,6 @@ public class PoiMapViewManager extends ViewGroupManager<FrameLayout> {
 
     public static final String REACT_CLASS = "PoiMapViewManager";
     public final int COMMAND_CREATE = 1;
-    private int propWidth;
-    private int propHeight;
     private String language;
     private String showOnMapStoreId;
     private String getRouteStoreId;
@@ -74,20 +71,11 @@ public class PoiMapViewManager extends ViewGroupManager<FrameLayout> {
             case COMMAND_CREATE:
                 createFragment(root, reactNativeViewId);
                 break;
-            default: {}
+            default: {
+            }
         }
     }
 
-    @ReactPropGroup(names = {"width", "height"}, customType = "Style")
-    public void setStyle(FrameLayout view, int index, Integer value) {
-        if (index == 0) {
-            propWidth = value;
-        }
-
-        if (index == 1) {
-            propHeight = value;
-        }
-    }
 
     @ReactProp(name = "language")
     public void setLanguage(FrameLayout view, String value) {
@@ -119,7 +107,7 @@ public class PoiMapViewManager extends ViewGroupManager<FrameLayout> {
                 .commit();
     }
 
-    public void setupLayout(View view) {
+    public void setupLayout(ViewGroup view) {
         Choreographer.getInstance().postFrameCallback(new Choreographer.FrameCallback() {
             @Override
             public void doFrame(long frameTimeNanos) {
@@ -133,15 +121,13 @@ public class PoiMapViewManager extends ViewGroupManager<FrameLayout> {
     /**
      * Layout all children properly
      */
-    public void manuallyLayoutChildren(View view) {
-        // propWidth and propHeight coming from react-native props
-        int width = propWidth;
-        int height = propHeight;
-
-        view.measure(
-                View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
-                View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY));
-
-        view.layout(0, 0, width, height);
+    public void manuallyLayoutChildren(ViewGroup view) {
+        for (int i = 0; i < view.getChildCount(); i++) {
+            View child = view.getChildAt(i);
+            child.measure(View.MeasureSpec.makeMeasureSpec(view.getMeasuredWidth(), View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(view.getMeasuredHeight(), View.MeasureSpec.EXACTLY));
+            child.layout(0, 0, child.getMeasuredWidth(), child.getMeasuredHeight());
+        }
     }
+
 }
