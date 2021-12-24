@@ -10,31 +10,20 @@ import React from 'react';
 import { useEffect, useRef } from 'react';
 import type {Node} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
-  Text,
   useColorScheme,
   View,
   NativeModules,
   Button,
-  PixelRatio
 } from 'react-native';
 
 import MapView from './MapView.js';
+import { PoiMapView } from './PoiMapView.js';
 import {
   Colors
 } from 'react-native/Libraries/NewAppScreen';
 
-import { UIManager, findNodeHandle } from 'react-native';
 
-
-import { requireNativeComponent } from 'react-native';
-
-export const PoiMapViewManager = requireNativeComponent(
-  'PoiMapViewManager'
-);
 const App: () => Node = () => {
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -68,29 +57,10 @@ const App: () => Node = () => {
       </View>
     );
   } else {
-    const createFragment = (viewId) =>
-  UIManager.dispatchViewManagerCommand(
-    viewId,
-    // we are calling the 'create' command
-    UIManager.PoiMapViewManager.Commands.create.toString(),
-    [viewId]
-  );
-
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const viewId = findNodeHandle(ref.current);
-    createFragment(viewId);
-  }, []);
     return (
       <View style={{flex: 1}}>
           <View style={{height: 100, backgroundColor:"blue"}}/>
-          <PoiMapViewManager
-          showPointOnMap = "store_id"
-          language = "en"
-          style={{flex: 1}}
-          ref={ref}
-      />
+          <PoiMapView/>
           <View style={{height: 100, backgroundColor:"red"}}>
           </View>
       </View>
