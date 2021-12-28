@@ -744,7 +744,7 @@ const createFragment = (viewId) =>
     [viewId]
   );
 
-export const PoiMapView = () => {
+export const PoiMapView = (props) => {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -754,6 +754,9 @@ export const PoiMapView = () => {
 
   return (
     <PoiMapViewManager
+    language = {props.language}
+    showPointOnMap = {props.showPointOnMap}
+    getRouteTo = {props.getRouteTo}
       style={{
         flex: 1
       }}
