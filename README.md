@@ -41,6 +41,10 @@ class NavigationView: UIView {
   @objc var language: NSString = "tr" {
     didSet {
       PLNNavigationSettings.sharedInstance().applicationLanguage = language as String
+      if self.currentCarrier != nil {
+        self.currentCarrier?.removeFromSuperview()
+        initMap()
+      }
     }
   }
   
@@ -67,6 +71,7 @@ class NavigationView: UIView {
     PLNNavigationSettings.sharedInstance().mallId = "PLACE_TITLE"
     PLNNavigationSettings.sharedInstance().applicationId = "APPLICATION_ID"
     PLNNavigationSettings.sharedInstance().applicationSecret = "APPLICATION_SECRET_KEY"
+	PLNNavigationSettings.sharedInstance().navigationUniqueIdentifier = "UNIQUE_ID"
 
     PLNavigationManager.sharedInstance()?.getReadyForStoreMap(completionHandler: { (error) in
       if error == nil {
