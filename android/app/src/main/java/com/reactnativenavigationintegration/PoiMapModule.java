@@ -22,6 +22,14 @@ public class PoiMapModule  extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void restartMap(String language) {
+        ReactApplicationContext context = getReactApplicationContext();
+        Intent intent = new Intent("restart-map");
+        intent.putExtra("language", language);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+    }
+
+    @ReactMethod
     public void getRouteTo(String storeId) {
         ReactApplicationContext context = getReactApplicationContext();
 

@@ -61,7 +61,7 @@ const App: () => Node = () => {
     return (
       <View style={{flex: 1}}>
           <View style={{height: 100, backgroundColor:"blue"}}/>
-          <PoiMapView language="tr"  getRouteTo = {"storeId"}   showPointOnMap = {"storeId"} />
+          <PoiMapView language="en"  getRouteTo = {"storeId"}   showPointOnMap = {"storeId"} />
           <View style={{height: 100, backgroundColor:"red"}}>
           <Button
             title="Show pin on map"
@@ -74,6 +74,13 @@ const App: () => Node = () => {
             title="Get route"
             onPress={() => {
               NativeModules.PoiMapModule.getRouteTo("storeId");
+            }
+            }
+          />
+       <Button
+            title="Restart map"
+            onPress={() => {
+              NativeModules.PoiMapModule.restartMap("tr");
             }
             }
           />

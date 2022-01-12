@@ -67,6 +67,30 @@ public class PoiMapFragment extends Fragment {
         }
     };
 
+
+    private final BroadcastReceiver restartMapReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            getRouteStoreId = null;
+            showOnMapStoreId = null;
+            isStoresReady = false;
+
+            String language = intent.getStringExtra("language");
+            if (language == null) {
+                language = "tr";
+            }
+            String finalLanguage = language;
+            requireActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    PoiNavigation.getInstance().clearResources();
+                    startNavigation(finalLanguage);
+                }
+            });
+
+        }
+    };
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         super.onCreateView(inflater, parent, savedInstanceState);
@@ -86,6 +110,9 @@ public class PoiMapFragment extends Fragment {
 
         LocalBroadcastManager.getInstance(requireContext()).registerReceiver(navigateToStoreReceiver,
                 new IntentFilter("navigate-to-store"));
+
+        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(restartMapReceiver,
+                new IntentFilter("restart-map"));
     }
 
     @Override
@@ -113,6 +140,7 @@ public class PoiMapFragment extends Fragment {
     public void onDestroyView() {
         LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(showOnMapReceiver);
         LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(navigateToStoreReceiver);
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(restartMapReceiver);
         super.onDestroyView();
     }
 
