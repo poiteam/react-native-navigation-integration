@@ -14,6 +14,7 @@
 
 -(void) showPointOnMap:(NSString *)storeId;
 -(void) getRouteTo:(NSString *)storeId;
+-(void) reInitMap;
 
 @end
 #endif /* PoilabsNavigationBridge_h */

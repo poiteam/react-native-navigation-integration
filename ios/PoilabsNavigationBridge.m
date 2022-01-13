@@ -26,4 +26,10 @@ RCT_EXPORT_METHOD(getRouteTo:(NSString *)storeId) {
   });
 }
 
+RCT_EXPORT_METHOD(reInitMap) {
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"reInitMap" object:self];
+  });
+}
+
 @end
