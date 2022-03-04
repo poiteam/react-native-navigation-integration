@@ -54,6 +54,13 @@ const App: () => Node = () => {
             }
             }
           />
+           <Button
+            title="Restart map"
+            onPress={() => {
+              NativeModules.PoilabsNavigationBridge.reInitMap();
+            }
+            }
+          />
           </View>
       </View>
     );

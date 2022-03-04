@@ -40,6 +40,7 @@ class NavigationView: UIView {
   func initMap() {
     NotificationCenter.default.addObserver(self, selector: #selector(showPointOnMap), name: Notification.Name("showPointOnMap"), object: nil)
     NotificationCenter.default.addObserver(self, selector: #selector(navigateTo), name: Notification.Name("getRouteTo"), object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(reInitMap), name: Notification.Name("reInitMap"), object: nil)
     
     
     PLNNavigationSettings.sharedInstance().mallId = "PLACE_TITLE"
@@ -76,6 +77,14 @@ class NavigationView: UIView {
   @objc func navigateTo(_ notification: Notification) {
     if let storeId = notification.userInfo?["storeId"] as? String {
       currentCarrier?.navigateWithStoreId(to: storeId)
+    }
+  }
+  
+  @objc func reInitMap() {
+    NotificationCenter.default.removeObserver(self)
+    if self.currentCarrier != nil {
+      self.currentCarrier?.removeFromSuperview()
+      initMap()
     }
   }
 }
