@@ -15,6 +15,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import com.poilabs.navigation.model.PoiNavigation;
 import com.poilabs.navigation.model.PoiSdkConfig;
 import com.poilabs.navigation.view.fragments.MapFragment;
+import com.poilabs.poilabspositioning.model.PLPStatus;
 
 import java.util.Arrays;
 
@@ -63,6 +64,16 @@ public class HomeActivity extends AppCompatActivity {
                         }
                     }
                 });
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+
+            }
+
+            @Override
+            public void onStatusChanged(PLPStatus plpStatus) {
+
             }
         });
 
