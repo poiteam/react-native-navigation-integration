@@ -226,20 +226,10 @@ allprojects {
 ~~~groovy  
   
 dependencies {  
-	 implementation 'org.bitbucket.poiteam:android-navigation-sdk:v2.8.28'  
+	 implementation 'org.bitbucket.poiteam:android-navigation-sdk:v2.10.21'  
  }  
 ~~~ 
 
-### PRE-REQUIREMENTS
-
-Android Manifest file:
-
-~~~ groovy
-  <uses-permission android:name="android.permission.BLUETOOTH" />
-  <uses-permission android:name="android.permission.INTERNET" />
-  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />  
-  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-~~~
 
 
 ### USAGE
@@ -424,7 +414,6 @@ public class PoiMapFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         getRouteStoreId = getArguments().getString("getRouteStoreId");
         showOnMapStoreId = getArguments().getString("showOnMapStoreId");
-        askLocalPermission();
 
         LocalBroadcastManager.getInstance(requireContext()).registerReceiver(showOnMapReceiver,
                 new IntentFilter("show-on-map"));
@@ -506,28 +495,6 @@ public class PoiMapFragment extends Fragment {
             }
         });
 
-    }
-
-    @TargetApi(Build.VERSION_CODES.M)
-    private void askLocalPermission() {
-        int hasLocalPermission = requireActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
-        if (hasLocalPermission != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
-        } else {
-            language = getArguments().getString("language");
-            if (language == null) {
-                language = "tr";
-            }
-            startNavigation(language);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 1) {
-            askLocalPermission();
-        }
     }
 }
 ```

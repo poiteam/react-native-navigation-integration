@@ -21,6 +21,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.poilabs.navigation.model.PoiNavigation;
 import com.poilabs.navigation.model.PoiSdkConfig;
 import com.poilabs.navigation.view.fragments.MapFragment;
+import com.poilabs.poilabspositioning.model.PLPStatus;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -185,6 +186,16 @@ public class PoiMapFragment extends Fragment {
                         }
                     }
                 });
+
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+
+            }
+
+            @Override
+            public void onStatusChanged(PLPStatus plpStatus) {
 
             }
         });
