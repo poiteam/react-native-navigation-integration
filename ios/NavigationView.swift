@@ -44,8 +44,8 @@ class NavigationView: UIView {
     
     
     //PLNNavigationSettings.sharedInstance().mallId = "PLACE_TITLE"
-    PLNNavigationSettings.sharedInstance().applicationId = "719b8b82-a836-4978-9de9-8e5b4885e241"
-    PLNNavigationSettings.sharedInstance().applicationSecret = "c70a6cc8-595f-47f0-8b90-e3357f8b5374"
+    PLNNavigationSettings.sharedInstance().applicationId = "applicationId"
+    PLNNavigationSettings.sharedInstance().applicationSecret = "applicationSecret"
     PLNNavigationSettings.sharedInstance().navigationUniqueIdentifier = "UNIQUE_ID"
 
     PLNavigationManager.sharedInstance()?.getReadyForStoreMap(completionHandler: { (error) in
