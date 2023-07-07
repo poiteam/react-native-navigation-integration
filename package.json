@@ -12,8 +12,9 @@
   "dependencies": {
     "@react-navigation/bottom-tabs": "^6.0.9",
     "@react-navigation/native": "^6.0.6",
-    "react": "17.0.2",
-    "react-native": "^0.66.4"
+    "react": "18.0.0",
+    "react-native": "0.69.3",
+    "react-native-maps": "^1.7.1"
   },
   "devDependencies": {
     "@babel/core": "^7.15.8",

@@ -43,9 +43,9 @@ class NavigationView: UIView {
     NotificationCenter.default.addObserver(self, selector: #selector(reInitMap), name: Notification.Name("reInitMap"), object: nil)
     
     
-    PLNNavigationSettings.sharedInstance().mallId = "PLACE_TITLE"
-    PLNNavigationSettings.sharedInstance().applicationId = "APPLICATION_ID"
-    PLNNavigationSettings.sharedInstance().applicationSecret = "APPLICATION_SECRET_KEY"
+    //PLNNavigationSettings.sharedInstance().mallId = "PLACE_TITLE"
+    PLNNavigationSettings.sharedInstance().applicationId = "719b8b82-a836-4978-9de9-8e5b4885e241"
+    PLNNavigationSettings.sharedInstance().applicationSecret = "c70a6cc8-595f-47f0-8b90-e3357f8b5374"
     PLNNavigationSettings.sharedInstance().navigationUniqueIdentifier = "UNIQUE_ID"
 
     PLNavigationManager.sharedInstance()?.getReadyForStoreMap(completionHandler: { (error) in
@@ -96,5 +96,9 @@ extension NavigationView: PLNNavigationMapViewDelegate {
     } else if let storeId = getRouteTo {
       currentCarrier?.navigateWithStoreId(to: storeId as String)
     }
+  }
+  
+  func didLocationStatusChange(_ status: PLLocationStatus) {
+    
   }
 }
