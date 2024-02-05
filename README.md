@@ -420,6 +420,9 @@ public class PoiMapFragment extends Fragment {
 
         LocalBroadcastManager.getInstance(requireContext()).registerReceiver(navigateToStoreReceiver,
                 new IntentFilter("navigate-to-store"));
+        
+        // Call below method if all permissions granted
+        // startNavigation()
     }
 
     @Override
@@ -493,6 +496,14 @@ public class PoiMapFragment extends Fragment {
                 });
 
             }
+            
+           @Override
+           public void onError(Throwable throwable) {
+
+           }
+
+           @Override
+           public void onStatusChanged(PLPStatus plpStatus) {}
         });
 
     }
