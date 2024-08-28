@@ -3,9 +3,9 @@
 buildscript {
     ext {
         buildToolsVersion = "30.0.2"
-        minSdkVersion = 21
-        compileSdkVersion = 31
-        targetSdkVersion = 31
+        minSdkVersion = 24
+        compileSdkVersion = 33
+        targetSdkVersion = 33
         ndkVersion = "21.4.7075529"
     }
     repositories {
@@ -40,12 +40,12 @@ allprojects {
             }
             credentials {
                 username = 'mapbox'
-                password = project.properties['MAPBOX_TOKEN'] ?: ""
+                password = "sk.eyJ1IjoicG9pLXBhc2FiYWhjZSIsImEiOiJja2loZ3A0MXAwZHI5MnZvZ3h5MWZsanB2In0.zs5YqcUb9ZuCWqJVTXx0_A"
             }
         }
         maven {
             url "https://jitpack.io"
-            credentials { username = 'JITPACK_TOKEN' }
+            credentials { username = "jp_rqqqj7aosvrlgngq90ptakqqua" }
         }
     }
 }
