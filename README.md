@@ -226,7 +226,7 @@ allprojects {
 ~~~groovy  
   
 dependencies {  
-	 implementation 'com.github.poiteam:Android-Navigation-SDK:4.2.4'
+	 implementation 'com.github.poiteam:Android-Navigation-SDK:4.3.0'
  }  
 ~~~ 
 
