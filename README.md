@@ -24,6 +24,8 @@ To Integrate this framework you should add some features to your project info.pl
 
 +Privacy - Bluetooth Always Usage Description
 
+If your app uses a corporate proxy or PAC file, add the required ATS exceptions for those proxy hostnames under `NSAppTransportSecurity > NSExceptionDomains` in your app `Info.plist`.
+
 ### USAGE
 
 Create a Swift file named **NavigationView** with content below. This will be your Map View. 
@@ -78,8 +80,8 @@ class NavigationView: UIView {
           let carrierView = PLNNavigationMapView(frame: CGRect(x: 0, y: 0, width: self.bounds.size.width, height: self.bounds.size.height))
           carrierView.awakeFromNib()
           carrierView.delegate = self
-          carrierView.searchBarBaseView.backgroundColor = UIColor.black
-          carrierView.searchCancelButton.setTitleColor(.white, for: .normal)
+          carrierView.searchBarBaseView?.backgroundColor = UIColor.black
+          carrierView.searchCancelButton?.setTitleColor(.white, for: .normal)
           self.currentCarrier = carrierView
           self.addSubview(carrierView)
         } else {
@@ -89,7 +91,7 @@ class NavigationView: UIView {
   }
   
   override func removeFromSuperview() {
-    self.removeFromSuperview()
+    super.removeFromSuperview()
     NotificationCenter.default.removeObserver(self)
   }
   
