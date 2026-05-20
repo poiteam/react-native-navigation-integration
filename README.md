@@ -791,3 +791,14 @@ NativeModules.PoiMapModule.showPointOnMap(["store_id"]);
 ...
 NativeModules.PoiMapModule.getRouteTo("store_id");
 ```
+
+---
+
+## iOS Version-Specific Notes
+
+### PoilabsNavigation 7.1.2+
+
+- Replace `use_frameworks!` with `use_frameworks! :linkage => :static` in your Podfile.
+- Do **not** add `pod 'Mapbox-iOS-SDK', '~> 5.9'`. PoilabsNavigation 7.1.2 already includes the required Mapbox frameworks. Adding it separately will cause conflicts.
+- Remove `PLNNavigationSettings.sharedInstance().mallId` — this field no longer exists in SDK 7.1.2.
+
