@@ -1112,6 +1112,97 @@ private void unregisterReceiversIfNeeded() {
 In `onViewCreated`, replace the direct `registerReceiver` calls with `registerReceiversIfNeeded()`.  
 In `onDestroyView`, replace the direct `unregisterReceiver` calls with `unregisterReceiversIfNeeded()`.
 
+#### New Architecture (newArchEnabled=true)
+
+PoilabsNavigation uses a fragment-based `ViewManager` which is not Fabric-compatible. You can keep `newArchEnabled=true` (for TurboModules support) but must disable Fabric and Bridgeless explicitly.
+
+**MainApplication.kt**
+
+```kotlin
+if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
+    load(turboModulesEnabled = true, fabricEnabled = false, bridgelessEnabled = false)
+}
+```
+
+**MainActivity.kt**
+
+Pass `false` instead of `fabricEnabled`:
+
+```kotlin
+override fun createReactActivityDelegate(): ReactActivityDelegate =
+    DefaultReactActivityDelegate(this, mainComponentName, false)
+```
+
+Also remove the `fabricEnabled` import:
+
+```kotlin
+// remove this line
+import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
+```
+
+**PoiMapViewManager.java**
+
+Move `language`, `showOnMapStoreId`, `getRouteStoreId` out of instance fields into a per-view `MapState`. With New Architecture, props and the `create` command can arrive in a different order — per-view state ensures each view always uses its own props:
+
+```java
+private static final Map<Integer, MapState> viewStates = new ConcurrentHashMap<>();
+
+private static class MapState {
+    String language = "en";
+    String showOnMapStoreId;
+    String getRouteStoreId;
+}
+
+@NonNull
+private MapState getState(@NonNull FrameLayout view) {
+    return viewStates.computeIfAbsent(view.getId(), id -> new MapState());
+}
+```
+
+Update `createViewInstance` to initialise the state for the new view:
+
+```java
+viewStates.put(frameLayout.getId(), new MapState());
+```
+
+Update `onDropViewInstance` to clean it up:
+
+```java
+viewStates.remove(droppedViewId);
+```
+
+Update each `@ReactProp` setter to write into the per-view state and retry attachment:
+
+```java
+@ReactProp(name = "language")
+public void setLanguage(FrameLayout view, String value) {
+    getState(view).language = value == null ? "en" : value;
+    tryAttachFragment(view, "setLanguage");
+}
+
+@ReactProp(name = "showPointOnMap")
+public void setShowPointOnMap(FrameLayout view, String value) {
+    getState(view).showOnMapStoreId = value;
+    tryAttachFragment(view, "setShowPointOnMap");
+}
+
+@ReactProp(name = "getRouteTo")
+public void setGetRouteTo(FrameLayout view, String value) {
+    getState(view).getRouteStoreId = value;
+    tryAttachFragment(view, "setGetRouteTo");
+}
+```
+
+Finally, update `tryAttachFragment` to read from the state map instead of instance fields when creating the fragment:
+
+```java
+MapState state = getState(root);
+final PoiMapFragment poiMapFragment =
+    PoiMapFragment.newInstance(state.language, state.showOnMapStoreId, state.getRouteStoreId);
+```
+
+> **Note:** This is a compatibility setup, not full Fabric support. Full New Architecture support would require rewriting `PoiMapViewManager` as a Fabric native component using codegen.
+
 ---
 
 ## React Native
