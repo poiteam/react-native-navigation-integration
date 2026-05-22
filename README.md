@@ -1208,9 +1208,13 @@ public void setGetRouteTo(FrameLayout view, String value) {
 }
 ```
 
-Finally, update `tryAttachFragment` to read from the state map instead of instance fields when creating the fragment:
+Update the `tryAttachFragment` signature to accept a `source` string (used for logging), then read from the state map when creating the fragment:
 
 ```java
+// update method signature
+private void tryAttachFragment(@NonNull FrameLayout root, @NonNull String source) { ... }
+
+// inside the method, replace instance field usage with:
 MapState state = getState(root);
 final PoiMapFragment poiMapFragment =
     PoiMapFragment.newInstance(state.language, state.showOnMapStoreId, state.getRouteStoreId);
