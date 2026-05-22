@@ -1201,8 +1201,6 @@ final PoiMapFragment poiMapFragment =
     PoiMapFragment.newInstance(state.language, state.showOnMapStoreId, state.getRouteStoreId);
 ```
 
-> **Note:** This is a compatibility setup, not full Fabric support. Full New Architecture support would require rewriting `PoiMapViewManager` as a Fabric native component using codegen.
-
 ---
 
 ## React Native
