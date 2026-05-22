@@ -830,7 +830,22 @@ private String uniqueId = BuildConfig.POILABS_UNIQUE_ID;
 
 **PoiMapViewManager**
 
-The original `PoiMapViewManager` can produce blank views on RN 0.73+ due to fragment lifecycle timing. Replace `createViewInstance` and `receiveCommand` as follows:
+The original `createFragment` method passes the React Native view tag directly as the fragment container ID:
+
+```java
+activity.getSupportFragmentManager()
+    .beginTransaction()
+    .replace(reactNativeViewId, poiMapFragment, ...)
+    .commit();
+```
+
+On RN 0.73+, React Native tag IDs and Android view IDs are no longer the same, so the fragment manager cannot find the container and throws:
+
+```
+java.lang.IllegalArgumentException: No view found for id 0x... for fragment PoiMapFragment
+```
+
+Replace the entire `createViewInstance`, `receiveCommand`, and `createFragment` with the following `tryAttachFragment` approach, which generates a proper Android view ID and waits until the view is attached to the window before committing the transaction:
 
 ```Java
 private static final Set<Integer> initializedViewIds = ConcurrentHashMap.newKeySet();
@@ -1273,17 +1288,19 @@ Create a js file called **PoiMapView.js**
 
 ```js
 import React, { useEffect, useRef } from 'react';
-import { UIManager, findNodeHandle, PixelRatio } from 'react-native';
+import { UIManager, findNodeHandle } from 'react-native';
 
 import { PoiMapViewManager } from './PoiMapViewManager';
 
-const createFragment = (viewId) =>
-  UIManager.dispatchViewManagerCommand(
-    viewId,
-    // we are calling the 'create' command
-    UIManager.PoiMapViewManager.Commands.create.toString(),
-    [viewId]
-  );
+const createFragment = (viewId) => {
+  const createCommand =
+    UIManager.getViewManagerConfig('PoiMapViewManager')?.Commands?.create ??
+    UIManager.PoiMapViewManager?.Commands?.create;
+
+  if (viewId == null || createCommand == null) return;
+
+  UIManager.dispatchViewManagerCommand(viewId, createCommand.toString(), [viewId]);
+};
 
 export const PoiMapView = (props) => {
   const ref = useRef(null);
@@ -1295,12 +1312,10 @@ export const PoiMapView = (props) => {
 
   return (
     <PoiMapViewManager
-    language = {props.language}
-    showPointOnMap = {props.showPointOnMap}
-    getRouteTo = {props.getRouteTo}
-      style={{
-        flex: 1
-      }}
+      language={props.language}
+      showPointOnMap={props.showPointOnMap}
+      getRouteTo={props.getRouteTo}
+      style={{ flex: 1 }}
       ref={ref}
     />
   );
