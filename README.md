@@ -237,7 +237,7 @@ allprojects {
 
 ~~~groovy  
 dependencies {  
-    implementation 'com.github.poiteam:Android-Navigation-SDK:7.0.1'
+    implementation 'com.github.poiteam:Android-Navigation-SDK:7.0.2'
 }  
 ~~~
 
@@ -774,7 +774,7 @@ afterEvaluate {
 
 dependencies {
     // ...
-    implementation 'com.github.poiteam:Android-Navigation-SDK:7.0.1'
+    implementation 'com.github.poiteam:Android-Navigation-SDK:7.0.2'
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
     implementation 'androidx.activity:activity-ktx:1.7.0'
 }
