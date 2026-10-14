@@ -1,45 +1,74 @@
 # PoilabsNavigation React Native Integration
 
+This guide shows how to add the PoiLabs Navigation map to a React Native app. It was tested with **React Native 0.87** (New Architecture, the default) on iOS and Android.
+
+> The sample app in this repository still uses an older React Native version; for new integrations follow this README.
+>
+> Looking for the old guide (React Native 0.69 – 0.76, SDK 7.0.2 / CocoaPods)? It is kept in the [previous version of this README](https://github.com/poiteam/react-native-navigation-integration/blob/7f05ea2/README.md).
+
+## Requirements
+
+| | iOS | Android |
+|---|---|---|
+| PoilabsNavigation | 7.3.1 | 8.1.0 |
+| Minimum OS | iOS 14.0 | Android 7.0 (API 24) |
+| Installation | Swift Package Manager | Gradle (JitPack) |
+| Other | | Compile SDK 35+, JDK 17 |
+
+PoiLabs provides your **APPLICATION_ID** and **APPLICATION_SECRET_KEY**, and for Android also the **JITPACK_TOKEN** and **MAPBOX_TOKEN**. **UNIQUE_ID** must be unique per app user.
+
+---
+
 ## iOS
 
 ### INSTALLATION
 
-To integrate PoilabsNavigation into your Xcode project using CocoaPods, specify it in your Podfile:
+PoilabsNavigation is distributed with **Swift Package Manager (SPM)**. CocoaPods is no longer supported for the SDK; new versions are not published there. Your React Native app keeps using CocoaPods for React Native itself, and you add the SDK to the app target with SPM:
 
-```curl
-pod 'PoilabsNavigation'
-```
+1. Open `ios/YourAppName.xcworkspace` in Xcode.
+2. Select **File > Add Package Dependencies...**
+3. Enter the repository URL: `https://github.com/poiteam/ios-navigation-pod.git`
+4. Choose **Exact Version** `7.3.1` and add the **PoilabsNavigation** product to your **app target**.
+
+The package contains everything the SDK needs: PoilabsNavigation, PoilabsMapView, PoilabsCommon and Mapbox Maps 11.18.0. PoilabsPositioning, PoilabsSdkAnalytics and PoilabsCore are resolved automatically. You do not need to add Mapbox or any other dependency yourself.
+
+> The first package resolution can take a few minutes because the package contains the Mapbox frameworks.
+
+**Note:** The SDK ships its own Mapbox Maps 11.18.0. If your app (or another React Native library) also adds Mapbox Maps, the two copies conflict.
+
+### Migrating from CocoaPods
+
+1. Remove `pod 'PoilabsNavigation'` from `ios/Podfile`, together with any `PoilabsCore`, `PoilabsPositioning`, `PoilabsSdkAnalytics`, `Mapbox-iOS-SDK` or `MapboxMobileEvents` lines. Also remove the `use_frameworks! :linkage => :static` line if you added it only for PoilabsNavigation.
+2. Run `pod install` in the `ios` folder.
+3. Add the package with Swift Package Manager as described above.
+
+Do not keep the SDK in your `Podfile` while it is added with SPM; the same frameworks would be embedded twice.
 
 ### PRE-REQUIREMENTS
 
-To Integrate this framework you should add some features to your project info.plist file.
+Add the following keys to your `Info.plist` file:
 
-+MGLMapboxMetricsEnabledSettingShownInApp : YES
+- **Privacy - Location Usage Description**
+- **Privacy - Location When In Use Usage Description**
+- **Privacy - Bluetooth Peripheral Usage Description**
+- **Privacy - Bluetooth Always Usage Description**
 
-+Privacy - Location Usage Description
-
-+Privacy - Location When In Use Usage Description
-
-+Privacy - Bluetooth Peripheral Usage Description
-
-+Privacy - Bluetooth Always Usage Description
+`MGLMapboxMetricsEnabledSettingShownInApp` was needed only by the old Mapbox SDK; you can remove it.
 
 If your app uses a corporate proxy or PAC file, add the required ATS exceptions for those proxy hostnames under `NSAppTransportSecurity > NSExceptionDomains` in your app `Info.plist`.
 
 ### USAGE
 
-Create a Swift file named **NavigationView** with content below. This will be your Map View. 
+Create a Swift file named **NavigationView.swift** with the content below. This is your map view. Replace `APPLICATION_ID`, `APPLICATION_SECRET_KEY` and `UNIQUE_ID` with your values. If Xcode asks to create a bridging header, accept it.
 
-Do not forget change application id and application secret key with those which are given by Poilabs.
-
-```Swift
+```swift
 import UIKit
 import PoilabsNavigation
 
 class NavigationView: UIView {
-  
+
   var currentCarrier: PLNNavigationMapView?
-  
+
   @objc var language: NSString = "tr" {
     didSet {
       PLNNavigationSettings.sharedInstance().applicationLanguage = language as String
@@ -49,58 +78,53 @@ class NavigationView: UIView {
       }
     }
   }
-  
+
   @objc var showOnMap: NSString?
   @objc var getRouteTo: NSString?
-  
-  //initWithFrame to init view from code
+
   override init(frame: CGRect) {
-      super.init(frame: frame)
-      initMap()
+    super.init(frame: frame)
+    NotificationCenter.default.addObserver(self, selector: #selector(showPointOnMap), name: Notification.Name("showPointOnMap"), object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(navigateTo), name: Notification.Name("getRouteTo"), object: nil)
+    initMap()
   }
-  
-  //initWithCode to init view from xib or storyboard
+
   required init?(coder aDecoder: NSCoder) {
-      super.init(coder: aDecoder)
-      initMap()
+    super.init(coder: aDecoder)
+    initMap()
   }
 
   func initMap() {
-    NotificationCenter.default.addObserver(self, selector: #selector(showPointOnMap), name: Notification.Name("showPointOnMap"), object: nil)
-    NotificationCenter.default.addObserver(self, selector: #selector(navigateTo), name: Notification.Name("getRouteTo"), object: nil)
-    
-    
-    PLNNavigationSettings.sharedInstance().mallId = "PLACE_TITLE"
-    PLNNavigationSettings.sharedInstance().applicationId = "APPLICATION_ID"
-    PLNNavigationSettings.sharedInstance().applicationSecret = "APPLICATION_SECRET_KEY"
-	PLNNavigationSettings.sharedInstance().navigationUniqueIdentifier = "UNIQUE_ID"
+    let settings = PLNNavigationSettings.sharedInstance()
+    settings?.applicationId = "APPLICATION_ID"
+    settings?.applicationSecret = "APPLICATION_SECRET_KEY"
+    settings?.navigationUniqueIdentifier = "UNIQUE_ID"
+    settings?.applicationLanguage = language as String
 
     PLNavigationManager.sharedInstance()?.getReadyForStoreMap(completionHandler: { (error) in
       if error == nil {
-          let carrierView = PLNNavigationMapView(frame: CGRect(x: 0, y: 0, width: self.bounds.size.width, height: self.bounds.size.height))
-          carrierView.awakeFromNib()
-          carrierView.delegate = self
-          carrierView.searchBarBaseView?.backgroundColor = UIColor.black
-          carrierView.searchCancelButton?.setTitleColor(.white, for: .normal)
-          self.currentCarrier = carrierView
-          self.addSubview(carrierView)
-        } else {
-          //show error
-        }
+        let carrierView = PLNNavigationMapView(frame: self.bounds)
+        carrierView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        carrierView.awakeFromNib()
+        carrierView.delegate = self
+        self.currentCarrier = carrierView
+        self.addSubview(carrierView)
+      } else {
+        print("PoiLabs SDK init failed: \(String(describing: error))")
+      }
     })
   }
-  
-  override func removeFromSuperview() {
-    super.removeFromSuperview()
+
+  deinit {
     NotificationCenter.default.removeObserver(self)
   }
-  
+
   @objc func showPointOnMap(_ notification: Notification) {
     if let storeId = notification.userInfo?["storeId"] as? String {
       currentCarrier?.getShowonMapPin(storeId)
     }
   }
-  
+
   @objc func navigateTo(_ notification: Notification) {
     if let storeId = notification.userInfo?["storeId"] as? String {
       currentCarrier?.navigateWithStoreId(to: storeId)
@@ -118,14 +142,13 @@ extension NavigationView: PLNNavigationMapViewDelegate {
   }
 }
 ```
-Create a Objective C file named **PoilabsMapManager** with content below. This will create connection between Map view and React-Native. 
 
-Do not forget to change **YOUR_PROJECT_NAME** with your project name.
+Create an Objective-C file named **PoilabsMapManager.m** with the content below. It connects the map view to React Native. Replace **YOUR_PROJECT_NAME** with your Xcode target name.
 
-```c
-// RNTMapManager.m
+```objc
 #import <React/RCTViewManager.h>
-#import "reactNativeNavigationIntegration-Swift.h"
+#import "YOUR_PROJECT_NAME-Swift.h"
+
 @interface PoilabsMapManager : RCTViewManager
 @end
 
@@ -144,11 +167,9 @@ RCT_EXPORT_VIEW_PROPERTY(getRouteTo, NSString)
 @end
 ```
 
-You should create a header file called **PoilabsNavigationBridge.h** and a Objective-C file  called **PoilabsNavigationBridge.m** with content below. 
+Create a header file named **PoilabsNavigationBridge.h** and an Objective-C file named **PoilabsNavigationBridge.m** with the content below. These methods show a pin or start a route after the map is created.
 
-These methods are for getting route and showing pin after you create map if necessary. 
- 
-```c
+```objc
 #ifndef PoilabsNavigationBridge_h
 #define PoilabsNavigationBridge_h
 
@@ -163,12 +184,11 @@ These methods are for getting route and showing pin after you create map if nece
 #endif /* PoilabsNavigationBridge_h */
 ```
 
-```c
+```objc
 #import <Foundation/Foundation.h>
 #import "PoilabsNavigationBridge.h"
 
 @implementation PoilabsNavigationBridge: NSObject
-
 
 RCT_EXPORT_MODULE(PoilabsNavigationBridge);
 
@@ -189,1046 +209,393 @@ RCT_EXPORT_METHOD(getRouteTo:(NSString *)storeId) {
 @end
 ```
 
-
-
-### Version-Specific Notes
-
-#### PoilabsNavigation 7.1.2+
-
-- Replace `use_frameworks!` with `use_frameworks! :linkage => :static` in your Podfile.
-- Do **not** add `pod 'Mapbox-iOS-SDK', '~> 5.9'`. PoilabsNavigation 7.1.2 already includes the required Mapbox frameworks. Adding it separately will cause conflicts.
-- Remove `PLNNavigationSettings.sharedInstance().mallId` — this field no longer exists in SDK 7.1.2.
-
 ---
 
 ## Android
 
 ### INSTALLATION
 
-You can download our SDK via Gradle with following below steps
+Add the PoiLabs and Mapbox repositories to your project level `android/build.gradle`:
 
-
-*  Add jitpack and mapbox dependency to your project level build.gradle file with their tokens.
-   **JITPACK_TOKEN** is a token that PoiLabs will provide for you it will allow you to download our sdk.
-   **MAPBOX_TOKEN** is a token that also PoiLabs will provide for you and it will allow you to download MapBox Sdk for your app. (Maps from PoiLabs will shown on MapBox maps)
-
-~~~groovy  
-allprojects {  
-	  repositories {  
-		  maven {  
-			  url 'https://api.mapbox.com/downloads/v2/releases/maven'  
-			  authentication {  
-					  basic(BasicAuthentication)  
-			  }  
-			  credentials {  
-					  username = 'mapbox'  
-					  password = project.properties['MAPBOX_TOKEN'] ?: ""  
-				}  
-		 } 
-		  maven {  
-			   url "https://jitpack.io" 
-			   credentials { username = 'JITPACK_TOKEN' }  
-		  }  
-	  }  
-}
-~~~  
-
-* Add PoiLabs Navigation SDK dependency to your app level build.gradle file
-
-~~~groovy  
-dependencies {  
-    implementation 'com.github.poiteam:Android-Navigation-SDK:7.0.2'
-}  
-~~~
-
-
-
-### USAGE
-
-Create a java file named **PoilabsPackage** with content below.
-
-```Java
-import androidx.annotation.NonNull;
-
-import com.facebook.react.ReactPackage;
-import com.facebook.react.bridge.NativeModule;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.uimanager.ViewManager;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-public class PoilabsPackage implements ReactPackage {
-
-
-    @NonNull
-    @Override
-    public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
-        return Collections.singletonList(new PoiMapModule(reactContext));
-    }
-
-    @NonNull
-    @Override
-    public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
-        return Collections.singletonList(new PoiMapViewManager(reactContext));
-    }
-}
-```
-
-Create a java file called **PoiMapModule** 
-
-```Java
-import android.content.Intent;
-
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
-import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.ReadableArray;
-
-import java.util.ArrayList;
-
-public class PoiMapModule  extends ReactContextBaseJavaModule {
-    PoiMapModule(ReactApplicationContext context) {
-        super(context);
-    }
-
-    @Override
-    public String getName() {
-        return "PoiMapModule";
-    }
-
-    @ReactMethod
-    public void getRouteTo(String storeId) {
-        ReactApplicationContext context = getReactApplicationContext();
-
-        Intent intent = new Intent("navigate-to-store");
-
-        intent.putExtra("store_id", storeId);
-        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-    }
-
-
-    @ReactMethod
-    public void showPointOnMap(ReadableArray storeIds) {
-        ArrayList<String> storeIdList = new ArrayList<String>();
-        for (int i = 0; i < storeIds.size(); i++ ) {
-            storeIdList.add(storeIds.getString(i));
-        }
-        ReactApplicationContext context = getReactApplicationContext();
-        Intent intent = new Intent("show-on-map");
-        intent.putStringArrayListExtra("store_ids", storeIdList);
-        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-    }
-}
-```
-
-
-Open up your MainApplication.java file, which can be found in the following path: android/app/src/main/java/com/your-app-name/MainApplication.java
-
-Locate ReactNativeHost’s getPackages() method and add your package to the packages list getPackages() returns:
-
-```Java
-@Override
-  protected List<ReactPackage> getPackages() {
-    @SuppressWarnings("UnnecessaryLocalVariable")
-    List<ReactPackage> packages = new PackageList(this).getPackages();
-    packages.add(new PoilabsPackage());
-    return packages;
-  }
-```
-
-Create a java file called **PoiMapFragment**
-
-Do not forget change application id and application secret key with those which are given by Poilabs.
-
-
-```Java
-import android.Manifest;
-import android.annotation.TargetApi;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
-// replace with your view's import
-import com.poilabs.navigation.model.PoiNavigation;
-import com.poilabs.navigation.model.PoiSdkConfig;
-import com.poilabs.navigation.view.fragments.MapFragment;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-
-public class PoiMapFragment extends Fragment {
-    private String appId="APPLICATION_ID";
-    private String secretId="APPLICATION_SECRET_KEY";
-    private String uniqueId="UNIQUE_IDENTIFIER";
-    private String language;
-    private String showOnMapStoreId;
-    private String getRouteStoreId;
-    private boolean isStoresReady = false;
-
-    private final BroadcastReceiver showOnMapReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            ArrayList<String> store_ids = intent.getStringArrayListExtra("store_ids");
-            if (isStoresReady) {
-                requireActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        PoiNavigation.getInstance().showPointsOnMap(store_ids);
-                    }
-                });
+```groovy
+allprojects {
+    repositories {
+        maven {
+            url "https://api.mapbox.com/downloads/v2/releases/maven"
+            authentication {
+                basic(BasicAuthentication)
+            }
+            credentials {
+                username = "mapbox"
+                password = project.properties["MAPBOX_TOKEN"] ?: ""
             }
         }
-    };
-
-    private final BroadcastReceiver navigateToStoreReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            String storeId = intent.getStringExtra("store_id");
-            if (isStoresReady) {
-                requireActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        PoiNavigation.getInstance().navigateToStore(storeId);
-                    }
-                });
-            }
-
-        }
-    };
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        super.onCreateView(inflater, parent, savedInstanceState);
-
-        return inflater.inflate(R.layout.fragment_poi_map, parent, false);
-    }
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        getRouteStoreId = getArguments().getString("getRouteStoreId");
-        showOnMapStoreId = getArguments().getString("showOnMapStoreId");
-
-        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(showOnMapReceiver,
-                new IntentFilter("show-on-map"));
-
-        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(navigateToStoreReceiver,
-                new IntentFilter("navigate-to-store"));
-        
-        // Call below method if all permissions granted
-        // startNavigation()
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        // do any logic that should happen in an `onPause` method
-        // e.g.: customView.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        // do any logic that should happen in an `onResume` method
-        // e.g.: customView.onResume();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        // do any logic that should happen in an `onDestroy` method
-        // e.g.: customView.onDestroy();
-    }
-
-    @Override
-    public void onDestroyView() {
-        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(showOnMapReceiver);
-        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(navigateToStoreReceiver);
-        super.onDestroyView();
-    }
-
-    public static PoiMapFragment newInstance(String language, String showOnMapStoreId, String getRouteStoreId) {
-        PoiMapFragment poiMapFragment = new PoiMapFragment();
-
-        Bundle args = new Bundle();
-        args.putString("language", language);
-        args.putString("showOnMapStoreId", showOnMapStoreId);
-        args.putString("getRouteStoreId", getRouteStoreId);
-        poiMapFragment.setArguments(args);
-
-        return poiMapFragment;
-    }
-
-    private void startNavigation(String language) {
-        PoiSdkConfig poiSdkConfig = new PoiSdkConfig(
-                appId,
-                secretId,
-                uniqueId
-        );
-        PoiNavigation.getInstance(
-                this.getContext(),
-                language,
-                poiSdkConfig
-        ).bind(new PoiNavigation.OnNavigationReady() {
-            @Override
-            public void onReady(MapFragment mapFragment) {
-                getChildFragmentManager().beginTransaction().replace(R.id.mapLayout, mapFragment).commitAllowingStateLoss();
-            }
-
-            @Override
-            public void onStoresReady() {
-                isStoresReady = true;
-                requireActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (getRouteStoreId!=null) {
-                            PoiNavigation.getInstance().navigateToStore(getRouteStoreId);
-                        }else if (showOnMapStoreId != null) {
-                            PoiNavigation.getInstance().showPointsOnMap(Arrays.asList(showOnMapStoreId));
-                        }
-                    }
-                });
-
-            }
-            
-           @Override
-           public void onError(Throwable throwable) {
-
-           }
-
-           @Override
-           public void onStatusChanged(PLPStatus plpStatus) {}
-        });
-
-    }
-}
-```
-
-Create a java file called **PoiMapViewManager**
-
-```java
-import android.view.Choreographer;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentActivity;
-
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReadableArray;
-import com.facebook.react.common.MapBuilder;
-import com.facebook.react.uimanager.ThemedReactContext;
-import com.facebook.react.uimanager.ViewGroupManager;
-import com.facebook.react.uimanager.annotations.ReactProp;
-
-import java.util.Map;
-
-public class PoiMapViewManager extends ViewGroupManager<FrameLayout> {
-
-    public static final String REACT_CLASS = "PoiMapViewManager";
-    public final int COMMAND_CREATE = 1;
-    private String language;
-    private String showOnMapStoreId;
-    private String getRouteStoreId;
-
-    ReactApplicationContext reactContext;
-
-    public PoiMapViewManager(ReactApplicationContext reactContext) {
-        this.reactContext = reactContext;
-    }
-
-    @Override
-    public String getName() {
-        return REACT_CLASS;
-    }
-
-    /**
-     * Return a FrameLayout which will later hold the Fragment
-     */
-    @Override
-    public FrameLayout createViewInstance(ThemedReactContext reactContext) {
-        return new FrameLayout(reactContext);
-    }
-
-    /**
-     * Map the "create" command to an integer
-     */
-    @Nullable
-    @Override
-    public Map<String, Integer> getCommandsMap() {
-        return MapBuilder.of("create", COMMAND_CREATE);
-    }
-
-    /**
-     * Handle "create" command (called from JS) and call createFragment method
-     */
-    @Override
-    public void receiveCommand(
-            @NonNull FrameLayout root,
-            String commandId,
-            @Nullable ReadableArray args
-    ) {
-        super.receiveCommand(root, commandId, args);
-        int reactNativeViewId = args.getInt(0);
-        int commandIdInt = Integer.parseInt(commandId);
-
-        switch (commandIdInt) {
-            case COMMAND_CREATE:
-                createFragment(root, reactNativeViewId);
-                break;
-            default: {
-            }
-        }
-    }
-
-    @ReactProp(name = "language")
-    public void setLanguage(FrameLayout view, String value) {
-        language = value;
-    }
-
-    @ReactProp(name = "showPointOnMap")
-    public void setShowPointOnMap(FrameLayout view, String value) {
-        showOnMapStoreId = value;
-    }
-
-    @ReactProp(name = "getRouteTo")
-    public void setGetRouteTo(FrameLayout view, String value) {
-        getRouteStoreId = value;
-    }
-
-    /**
-     * Replace your React Native view with a custom fragment
-     */
-    public void createFragment(FrameLayout root, int reactNativeViewId) {
-        ViewGroup parentView = (ViewGroup) root.findViewById(reactNativeViewId);
-        setupLayout(parentView);
-
-        final PoiMapFragment poiMapFragment = PoiMapFragment.newInstance(language, showOnMapStoreId, getRouteStoreId);
-        FragmentActivity activity = (FragmentActivity) reactContext.getCurrentActivity();
-        activity.getSupportFragmentManager()
-                .beginTransaction()
-                .replace(reactNativeViewId, poiMapFragment, String.valueOf(reactNativeViewId))
-                .commit();
-    }
-
-    public void setupLayout(ViewGroup view) {
-        Choreographer.getInstance().postFrameCallback(new Choreographer.FrameCallback() {
-            @Override
-            public void doFrame(long frameTimeNanos) {
-                manuallyLayoutChildren(view);
-                view.getViewTreeObserver().dispatchOnGlobalLayout();
-                Choreographer.getInstance().postFrameCallback(this);
-            }
-        });
-    }
-
-    /**
-     * Layout all children properly
-     */
-    public void manuallyLayoutChildren(ViewGroup view) {
-        for (int i = 0; i < view.getChildCount(); i++) {
-            View child = view.getChildAt(i);
-            child.measure(View.MeasureSpec.makeMeasureSpec(view.getMeasuredWidth(), View.MeasureSpec.EXACTLY),
-                    View.MeasureSpec.makeMeasureSpec(view.getMeasuredHeight(), View.MeasureSpec.EXACTLY));
-            child.layout(0, 0, child.getMeasuredWidth(), child.getMeasuredHeight());
+        maven {
+            url "https://jitpack.io"
+            credentials { username = project.properties["JITPACK_TOKEN"] ?: "" }
         }
     }
 }
 
+apply plugin: "com.facebook.react.rootproject"
 ```
 
-### Version-Specific Notes
+Add the SDK and your PoiLabs credentials to `android/app/build.gradle`:
 
-#### React Native 0.73+
-
-React Native 0.73 migrated the Android template from Java to Kotlin and changed how Gradle repositories are declared. If you are on **RN 0.73 or above**, apply the following changes on top of the base setup.
-
-**MainApplication**
-
-Replace `MainApplication.java` with `MainApplication.kt`:
-
-```kotlin
-package com.yourappname
-
-import android.app.Application
-import com.facebook.react.PackageList
-import com.facebook.react.ReactApplication
-import com.facebook.react.ReactHost
-import com.facebook.react.ReactNativeHost
-import com.facebook.react.ReactPackage
-import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
-import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
-import com.facebook.react.defaults.DefaultReactNativeHost
-import com.facebook.soloader.SoLoader
-
-class MainApplication : Application(), ReactApplication {
-
-    override val reactNativeHost: ReactNativeHost =
-        object : DefaultReactNativeHost(this) {
-            override fun getPackages(): List<ReactPackage> =
-                PackageList(this).packages.apply {
-                    add(PoilabsPackage())
-                }
-            override fun getJSMainModuleName(): String = "index"
-            override fun getUseDeveloperSupport(): Boolean = BuildConfig.DEBUG
-            override val isNewArchEnabled: Boolean = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
-            override val isHermesEnabled: Boolean = BuildConfig.IS_HERMES_ENABLED
-        }
-
-    override val reactHost: ReactHost
-        get() = getDefaultReactHost(applicationContext, reactNativeHost)
-
-    override fun onCreate() {
-        super.onCreate()
-        System.loadLibrary("c++_shared")
-        SoLoader.init(this, false)
-        if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) { load() }
-    }
-}
-```
-
-**MainActivity**
-
-Replace `MainActivity.java` with `MainActivity.kt`:
-
-```kotlin
-package com.yourappname
-
-import android.os.Bundle
-import com.facebook.react.ReactActivity
-import com.facebook.react.ReactActivityDelegate
-import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
-import com.facebook.react.defaults.DefaultReactActivityDelegate
-
-class MainActivity : ReactActivity() {
-    override fun getMainComponentName(): String = "YourAppName"
-    override fun createReactActivityDelegate(): ReactActivityDelegate =
-        DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-}
-```
-
-**app/build.gradle**
-
-Add the Kotlin and React Native plugins, a `namespace`, and the Mapbox NDK packaging options:
-
-~~~groovy
-apply plugin: "com.android.application"
-apply plugin: "org.jetbrains.kotlin.android"
-apply plugin: "com.facebook.react"
-
-react {
-    debuggableVariants = []
-}
-
+```groovy
 android {
-    namespace "com.yourappname"
     // ...
     buildFeatures {
         buildConfig true
     }
-    packagingOptions {
-        jniLibs {
-            useLegacyPackaging true
-        }
-    }
-}
-
-afterEvaluate {
-    tasks.matching { it.name.startsWith("merge") && it.name.endsWith("JniLibFolders") }.configureEach {
-        doFirst {
-            def buildDir = it.project.buildDir.absolutePath
-            def abi = it.name.contains("Arm64") ? "arm64-v8a" :
-                       it.name.contains("X86_64") ? "x86_64" :
-                       it.name.contains("X86") ? "x86" : "armeabi-v7a"
-            def src = new File("${buildDir}/intermediates/merged_native_libs/${abi}/out/lib/${abi}/libc++_shared.so")
-            def dst = new File("${buildDir}/intermediates/stripped_native_libs/${abi}/out/lib/${abi}/libc++_shared.so")
-            if (src.exists() && !dst.exists()) {
-                dst.parentFile.mkdirs()
-                src.copyTo(dst)
-            }
-        }
+    defaultConfig {
+        // ...
+        minSdkVersion 24
+        buildConfigField "String", "POILABS_APP_ID", "\"${project.findProperty("POILABS_APP_ID") ?: ""}\""
+        buildConfigField "String", "POILABS_SECRET_KEY", "\"${project.findProperty("POILABS_SECRET_KEY") ?: ""}\""
+        buildConfigField "String", "POILABS_UNIQUE_ID", "\"${project.findProperty("POILABS_UNIQUE_ID") ?: ""}\""
     }
 }
 
 dependencies {
     // ...
-    implementation 'com.github.poiteam:Android-Navigation-SDK:7.0.2'
-    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
-    implementation 'androidx.activity:activity-ktx:1.7.0'
+    implementation "com.github.poiteam:Android-Navigation-SDK:8.1.0"
 }
-~~~
+```
 
-**root build.gradle**
+Add the values to `android/gradle.properties` (or to `~/.gradle/gradle.properties` to keep them out of version control):
 
-Add the Kotlin classpath and apply the React root project plugin at the bottom of the file:
-
-~~~groovy
-buildscript {
-    ext {
-        kotlinVersion = "1.8.0"
-        // ...
-    }
-    dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
-        // ...
-    }
-}
-
-// add at the end of the file
-apply plugin: "com.facebook.react.rootproject"
-~~~
-
-**settings.gradle**
-
-Add this line:
-
-~~~groovy
-includeBuild("../node_modules/@react-native/gradle-plugin")
-~~~
-
-**gradle.properties**
-
-Add the following entries. Instead of hardcoding credentials in `PoiMapFragment`, read them via `BuildConfig`:
-
-~~~
-newArchEnabled=false
-hermesEnabled=true
+```properties
+JITPACK_TOKEN=YOUR_JITPACK_TOKEN
+MAPBOX_TOKEN=YOUR_MAPBOX_TOKEN
 POILABS_APP_ID=APPLICATION_ID
 POILABS_SECRET_KEY=APPLICATION_SECRET_KEY
-POILABS_UNIQUE_ID=UNIQUE_IDENTIFIER
-~~~
-
-In `PoiMapFragment`, use:
-
-```Java
-private String appId = BuildConfig.POILABS_APP_ID;
-private String secretId = BuildConfig.POILABS_SECRET_KEY;
-private String uniqueId = BuildConfig.POILABS_UNIQUE_ID;
+POILABS_UNIQUE_ID=UNIQUE_ID
 ```
 
-**PoiMapViewManager**
+The SDK adds its location and Bluetooth permissions to your manifest and ships its own ProGuard rules. Ask for the location and Bluetooth runtime permissions before opening the map.
 
-The original `createFragment` method passes the React Native view tag directly as the fragment container ID:
+### USAGE
 
-```java
-activity.getSupportFragmentManager()
-    .beginTransaction()
-    .replace(reactNativeViewId, poiMapFragment, ...)
-    .commit();
-```
+All files below go into `android/app/src/main/java/com/yourappname/`. Replace `com.yourappname` with your package name.
 
-On RN 0.73+, React Native tag IDs and Android view IDs are no longer the same, so the fragment manager cannot find the container and throws:
-
-```
-java.lang.IllegalArgumentException: No view found for id 0x... for fragment PoiMapFragment
-```
-
-Replace the entire `createViewInstance`, `receiveCommand`, and `createFragment` with the following `tryAttachFragment` approach, which generates a proper Android view ID and waits until the view is attached to the window before committing the transaction:
-
-```Java
-private static final Set<Integer> initializedViewIds = ConcurrentHashMap.newKeySet();
-private static final Set<Integer> createRequestedViewIds = ConcurrentHashMap.newKeySet();
-
-@Override
-public FrameLayout createViewInstance(ThemedReactContext reactContext) {
-    FrameLayout frameLayout = new FrameLayout(reactContext);
-    frameLayout.setId(View.generateViewId());
-    frameLayout.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
-        @Override
-        public void onViewAttachedToWindow(@NonNull View v) {
-            tryAttachFragment(frameLayout);
-        }
-        @Override
-        public void onViewDetachedFromWindow(@NonNull View v) {}
-    });
-    frameLayout.post(() -> tryAttachFragment(frameLayout));
-    return frameLayout;
-}
-
-@Override
-public void receiveCommand(@NonNull FrameLayout root, String commandId, @Nullable ReadableArray args) {
-    super.receiveCommand(root, commandId, args);
-    if (args == null || args.size() == 0) return;
-    if (Integer.parseInt(commandId) == COMMAND_CREATE) {
-        createRequestedViewIds.add(root.getId());
-        tryAttachFragment(root);
-    }
-}
-
-@Override
-public void onDropViewInstance(@NonNull FrameLayout view) {
-    super.onDropViewInstance(view);
-    int id = view.getId();
-    initializedViewIds.remove(id);
-    createRequestedViewIds.remove(id);
-    if (reactContext.getCurrentActivity() instanceof FragmentActivity) {
-        FragmentActivity activity = (FragmentActivity) reactContext.getCurrentActivity();
-        if (!activity.isFinishing() && !activity.isDestroyed()) {
-            try {
-                FragmentManager fm = activity.getSupportFragmentManager();
-                Fragment f = fm.findFragmentByTag("poilabs_map_" + id);
-                if (f != null && !fm.isDestroyed()) {
-                    fm.beginTransaction().remove(f).commitNowAllowingStateLoss();
-                }
-            } catch (Exception ignored) {}
-        }
-    }
-    try { PoiNavigation.getInstance().clearResources(); } catch (Exception ignored) {}
-}
-
-private void tryAttachFragment(@NonNull FrameLayout root) {
-    int containerId = root.getId();
-    if (containerId == View.NO_ID) return;
-    if (!createRequestedViewIds.contains(containerId)) return;
-    if (!(reactContext.getCurrentActivity() instanceof FragmentActivity)) return;
-    FragmentActivity activity = (FragmentActivity) reactContext.getCurrentActivity();
-    if (activity.isFinishing() || activity.isDestroyed()) return;
-    if (!root.isAttachedToWindow()) { root.post(() -> tryAttachFragment(root)); return; }
-    FragmentManager fm = activity.getSupportFragmentManager();
-    if (fm.isDestroyed()) return;
-    String tag = "poilabs_map_" + containerId;
-    if (fm.findFragmentByTag(tag) != null || initializedViewIds.contains(containerId)) return;
-    setupLayout(root);
-    initializedViewIds.add(containerId);
-    try {
-        PoiMapFragment fragment = PoiMapFragment.newInstance(language, showOnMapStoreId, getRouteStoreId);
-        fm.beginTransaction().replace(containerId, fragment, tag).commitNowAllowingStateLoss();
-    } catch (Exception e) {
-        initializedViewIds.remove(containerId);
-    }
-}
-```
-
-**PoiMapFragment**
-
-On RN 0.73+, starting navigation immediately in `onViewCreated` can cause a crash because the fragment is not yet fully attached. Use a short delay and queue any commands that arrive before `onStoresReady`:
-
-```Java
-private boolean isStoresReady = false;
-private String pendingRouteStoreId;
-private ArrayList<String> pendingShowOnMapStoreIds;
-private final Handler mainHandler = new Handler(Looper.getMainLooper());
-
-@Override
-public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-    super.onViewCreated(view, savedInstanceState);
-    language = getArguments().getString("language");
-    getRouteStoreId = getArguments().getString("getRouteStoreId");
-    showOnMapStoreId = getArguments().getString("showOnMapStoreId");
-    LocalBroadcastManager.getInstance(requireContext()).registerReceiver(showOnMapReceiver, new IntentFilter("show-on-map"));
-    LocalBroadcastManager.getInstance(requireContext()).registerReceiver(navigateToStoreReceiver, new IntentFilter("navigate-to-store"));
-    mainHandler.postDelayed(() -> { if (isAdded()) startNavigation(language); }, 300);
-}
-
-// Update your BroadcastReceivers to queue commands when map is not ready yet:
-private final BroadcastReceiver showOnMapReceiver = new BroadcastReceiver() {
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        ArrayList<String> store_ids = intent.getStringArrayListExtra("store_ids");
-        if (!isStoresReady) { pendingShowOnMapStoreIds = store_ids; return; }
-        requireActivity().runOnUiThread(() -> PoiNavigation.getInstance().showPointsOnMap(store_ids));
-    }
-};
-
-private final BroadcastReceiver navigateToStoreReceiver = new BroadcastReceiver() {
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        String storeId = intent.getStringExtra("store_id");
-        if (!isStoresReady) { pendingRouteStoreId = storeId; return; }
-        requireActivity().runOnUiThread(() -> PoiNavigation.getInstance().navigateToStore(storeId));
-    }
-};
-
-// In onStoresReady, drain the queue after handling initial props:
-@Override
-public void onStoresReady() {
-    isStoresReady = true;
-    requireActivity().runOnUiThread(() -> {
-        if (getRouteStoreId != null) {
-            PoiNavigation.getInstance().navigateToStore(getRouteStoreId);
-        } else if (showOnMapStoreId != null) {
-            PoiNavigation.getInstance().showPointsOnMap(Arrays.asList(showOnMapStoreId));
-        }
-        if (pendingRouteStoreId != null) {
-            String id = pendingRouteStoreId; pendingRouteStoreId = null;
-            PoiNavigation.getInstance().navigateToStore(id);
-        } else if (pendingShowOnMapStoreIds != null) {
-            ArrayList<String> ids = pendingShowOnMapStoreIds; pendingShowOnMapStoreIds = null;
-            PoiNavigation.getInstance().showPointsOnMap(ids);
-        }
-    });
-}
-```
-
-#### React Native 0.76+
-
-These changes apply **on top of** the RN 0.73+ setup above.
-
-**MainApplication.kt**
-
-Replace the `SoLoader` import and init call:
+Create **PoilabsPackage.kt**:
 
 ```kotlin
-// remove
-import com.facebook.soloader.SoLoader
-SoLoader.init(this, false)
+package com.yourappname
 
-// add
-import com.facebook.react.soloader.OpenSourceMergedSoMapping
-import com.facebook.soloader.SoLoader
-SoLoader.init(this, OpenSourceMergedSoMapping)
+import com.facebook.react.ReactPackage
+import com.facebook.react.bridge.NativeModule
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.uimanager.ViewManager
+
+class PoilabsPackage : ReactPackage {
+    override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> =
+        listOf(PoiMapModule(reactContext))
+
+    override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> =
+        listOf(PoiMapViewManager(reactContext))
+}
 ```
 
-**settings.gradle**
+Create **PoiMapModule.kt**. It forwards the JavaScript calls to the map:
 
-Replace the file contents with:
+```kotlin
+package com.yourappname
 
-~~~groovy
-pluginManagement { includeBuild("../node_modules/@react-native/gradle-plugin") }
-plugins { id("com.facebook.react.settings") }
-extensions.configure(com.facebook.react.ReactSettingsExtension) { ex -> ex.autolinkLibrariesFromCommand() }
-rootProject.name = "YourAppName"
-include ":app"
-includeBuild("../node_modules/@react-native/gradle-plugin")
-~~~
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactContextBaseJavaModule
+import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.bridge.UiThreadUtil
 
-**app/build.gradle**
+class PoiMapModule(context: ReactApplicationContext) : ReactContextBaseJavaModule(context) {
+    override fun getName(): String = "PoiMapModule"
 
-Add `autolinkLibrariesWithApp()` to the `react` block:
+    @ReactMethod
+    fun getRouteTo(storeId: String) {
+        UiThreadUtil.runOnUiThread { PoiMapFragment.current?.navigateTo(storeId) }
+    }
 
-~~~groovy
-react {
-    autolinkLibrariesWithApp()
-    debuggableVariants = []
+    @ReactMethod
+    fun showPointOnMap(storeIds: ReadableArray) {
+        val ids = (0 until storeIds.size()).mapNotNull { storeIds.getString(it) }
+        UiThreadUtil.runOnUiThread { PoiMapFragment.current?.showPoints(ids) }
+    }
 }
-~~~
+```
 
-Also replace the `afterEvaluate` block with this more robust version that pulls `libc++_shared.so` directly from the Mapbox AAR:
+Create **PoiMapFragment.kt**. It starts the SDK and hosts the map:
 
-~~~groovy
-afterEvaluate {
-    android.applicationVariants.all { variant ->
-        def variantName = variant.name
-        def capitalizedVariantName = variantName.capitalize()
+```kotlin
+package com.yourappname
 
-        tasks.matching { it.name == "merge${capitalizedVariantName}NativeLibs" }.configureEach { task ->
-            task.doLast {
-                def mapboxCommonConfig = configurations.detachedConfiguration(
-                    dependencies.create("com.mapbox.common:common-ndk27:24.19.0@aar")
-                )
-                mapboxCommonConfig.transitive = false
-                def mapboxCommonArtifact = mapboxCommonConfig.singleFile
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import com.poilabs.navigation.model.PoiNavigation
+import com.poilabs.navigation.model.PoiSdkConfig
+import com.poilabs.navigation.view.fragments.MapFragment
+import com.poilabs.poilabspositioning.model.PLPStatus
+import java.lang.ref.WeakReference
 
-                def mergedLibRoots = [
-                    file("$buildDir/intermediates/merged_native_libs/${variantName}/merge${capitalizedVariantName}NativeLibs/out/lib"),
-                    file("$buildDir/intermediates/merged_native_libs/${variantName}/out/lib")
-                ]
+class PoiMapFragment : Fragment() {
 
-                copy {
-                    from(zipTree(mapboxCommonArtifact)) {
-                        include "jni/*/libc++_shared.so"
-                        eachFile { fcd -> fcd.path = fcd.path.replaceFirst("^jni/", "") }
+    private var isStoresReady = false
+    private var mapFragment: MapFragment? = null
+    private var pendingRouteStoreId: String? = null
+    private var pendingShowOnMapStoreIds: List<String>? = null
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
+        inflater.inflate(R.layout.fragment_poi_map, container, false)
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        currentRef = WeakReference(this)
+        pendingRouteStoreId = arguments?.getString(ARG_ROUTE_STORE_ID)
+        pendingShowOnMapStoreIds = arguments?.getString(ARG_SHOW_ON_MAP_STORE_ID)?.let { listOf(it) }
+        startNavigation(arguments?.getString(ARG_LANGUAGE) ?: "en")
+    }
+
+    override fun onDestroyView() {
+        if (currentRef?.get() === this) currentRef = null
+        val fm = activity?.supportFragmentManager
+        mapFragment?.let { if (fm != null && !fm.isDestroyed) fm.beginTransaction().remove(it).commitNowAllowingStateLoss() }
+        mapFragment = null
+        super.onDestroyView()
+    }
+
+    fun navigateTo(storeId: String) {
+        if (isStoresReady) PoiNavigation.getInstance().navigateToStore(storeId)
+        else pendingRouteStoreId = storeId
+    }
+
+    fun showPoints(storeIds: List<String>) {
+        if (isStoresReady) PoiNavigation.getInstance().showPointsOnMap(storeIds)
+        else pendingShowOnMapStoreIds = storeIds
+    }
+
+    private fun startNavigation(language: String) {
+        val config = PoiSdkConfig(
+            BuildConfig.POILABS_APP_ID,
+            BuildConfig.POILABS_SECRET_KEY,
+            BuildConfig.POILABS_UNIQUE_ID
+        )
+        PoiNavigation.getInstance(requireContext(), language, config)
+            .bind(object : PoiNavigation.OnNavigationReady {
+                override fun onReady(mapFragment: MapFragment) {
+                    if (!isAdded) return
+                    // Add MapFragment to the activity's FragmentManager (not childFragmentManager):
+                    // the SDK's category and search screens look it up there.
+                    this@PoiMapFragment.mapFragment = mapFragment
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .replace(R.id.mapLayout, mapFragment)
+                        .commitAllowingStateLoss()
+                }
+
+                override fun onStoresReady() {
+                    activity?.runOnUiThread {
+                        isStoresReady = true
+                        pendingRouteStoreId?.let {
+                            pendingRouteStoreId = null
+                            PoiNavigation.getInstance().navigateToStore(it)
+                        } ?: pendingShowOnMapStoreIds?.let {
+                            pendingShowOnMapStoreIds = null
+                            PoiNavigation.getInstance().showPointsOnMap(it)
+                        }
                     }
-                    includeEmptyDirs = false
-                    into file("$buildDir/tmp/mapboxCommonLibcxx/${variantName}")
                 }
 
-                def mapboxLibRoot = file("$buildDir/tmp/mapboxCommonLibcxx/${variantName}")
-                mergedLibRoots.findAll { it.exists() }.each { mergedLibRoot ->
-                    copy { from(mapboxLibRoot); into(mergedLibRoot) }
-                }
-            }
-        }
+                override fun onError(exception: Throwable?) {}
 
-        tasks.matching { it.name == "strip${capitalizedVariantName}DebugSymbols" }.configureEach { task ->
-            task.doLast {
-                def mapboxLibRoot = file("$buildDir/tmp/mapboxCommonLibcxx/${variantName}")
-                if (!mapboxLibRoot.exists()) return
-                def strippedLibRoots = [
-                    file("$buildDir/intermediates/stripped_native_libs/${variantName}/strip${capitalizedVariantName}DebugSymbols/out/lib"),
-                    file("$buildDir/intermediates/stripped_native_libs/${variantName}/out/lib")
-                ]
-                strippedLibRoots.findAll { it.exists() }.each { strippedLibRoot ->
-                    copy { from(mapboxLibRoot); into(strippedLibRoot) }
-                }
-            }
-        }
+                override fun onStatusChanged(plpStatus: PLPStatus) {}
+            })
     }
-}
-~~~
 
-**PoiMapViewManager**
+    companion object {
+        private const val ARG_LANGUAGE = "language"
+        private const val ARG_SHOW_ON_MAP_STORE_ID = "showOnMapStoreId"
+        private const val ARG_ROUTE_STORE_ID = "getRouteStoreId"
 
-Add a `removeStaleFragments` helper and call it just before committing a new fragment in `tryAttachFragment`. This prevents ghost fragments when the component remounts:
+        private var currentRef: WeakReference<PoiMapFragment>? = null
+        val current: PoiMapFragment? get() = currentRef?.get()
 
-```java
-private void removeStaleFragments(@NonNull FragmentManager fragmentManager, @NonNull String activeTag) {
-    for (Fragment fragment : fragmentManager.getFragments()) {
-        if (fragment == null || fragment.getTag() == null) continue;
-        String tag = fragment.getTag();
-        if (!tag.startsWith("poilabs_map_") || tag.equals(activeTag)) continue;
-        try {
-            fragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss();
-        } catch (IllegalStateException ignored) {}
+        fun newInstance(language: String?, showOnMapStoreId: String?, getRouteStoreId: String?) =
+            PoiMapFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_LANGUAGE, language)
+                    putString(ARG_SHOW_ON_MAP_STORE_ID, showOnMapStoreId)
+                    putString(ARG_ROUTE_STORE_ID, getRouteStoreId)
+                }
+            }
     }
 }
 ```
 
-Call it inside `tryAttachFragment`, just before the `fragmentManager.beginTransaction()` line:
+> `MapFragment` must be added to the **activity's** `supportFragmentManager`, not to `childFragmentManager`. The SDK's category and search screens look it up there; otherwise selecting a store from a category list does nothing.
 
-```java
-removeStaleFragments(fragmentManager, fragmentTag);
-```
-
-**PoiMapFragment**
-
-Two additions to prevent double-registration of broadcast receivers:
-
-```java
-private boolean receiversRegistered = false;
-
-private void registerReceiversIfNeeded() {
-    if (receiversRegistered) return;
-    LocalBroadcastManager.getInstance(requireContext()).registerReceiver(showOnMapReceiver, new IntentFilter("show-on-map"));
-    LocalBroadcastManager.getInstance(requireContext()).registerReceiver(navigateToStoreReceiver, new IntentFilter("navigate-to-store"));
-    receiversRegistered = true;
-}
-
-private void unregisterReceiversIfNeeded() {
-    if (!receiversRegistered) return;
-    LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(showOnMapReceiver);
-    LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(navigateToStoreReceiver);
-    receiversRegistered = false;
-}
-```
-
-In `onViewCreated`, replace the direct `registerReceiver` calls with `registerReceiversIfNeeded()`.  
-In `onDestroyView`, replace the direct `unregisterReceiver` calls with `unregisterReceiversIfNeeded()`.
-
-#### New Architecture (newArchEnabled=true)
-
-PoilabsNavigation uses a fragment-based `ViewManager` which is not Fabric-compatible. You can keep `newArchEnabled=true` (for TurboModules support) but must disable Fabric and Bridgeless explicitly.
-
-**MainApplication.kt**
+Create **PoiMapViewManager.kt**. It creates the native view and attaches `PoiMapFragment` to it:
 
 ```kotlin
-if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
-    load(turboModulesEnabled = true, fabricEnabled = false, bridgelessEnabled = false)
+package com.yourappname
+
+import android.view.Choreographer
+import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import androidx.fragment.app.FragmentActivity
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.uimanager.ThemedReactContext
+import com.facebook.react.uimanager.ViewGroupManager
+import com.facebook.react.uimanager.annotations.ReactProp
+
+class PoiMapViewManager(private val reactContext: ReactApplicationContext) : ViewGroupManager<FrameLayout>() {
+
+    private class MapProps {
+        var language: String = "en"
+        var showOnMapStoreId: String? = null
+        var getRouteStoreId: String? = null
+    }
+
+    override fun getName(): String = REACT_CLASS
+
+    override fun createViewInstance(context: ThemedReactContext): FrameLayout {
+        val root = FrameLayout(context)
+        root.id = View.generateViewId()
+        root.setTag(R.id.poilabs_map_props, MapProps())
+        root.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(v: View) = attachFragment(root)
+            override fun onViewDetachedFromWindow(v: View) {}
+        })
+        return root
+    }
+
+    // Kept for apps that still dispatch the old "create" command; the map is attached automatically.
+    override fun getCommandsMap(): Map<String, Int> = mapOf("create" to COMMAND_CREATE)
+
+    override fun receiveCommand(root: FrameLayout, commandId: String, args: ReadableArray?) {
+        if (commandId == "create" || commandId == COMMAND_CREATE.toString()) attachFragment(root)
+    }
+
+    @ReactProp(name = "language")
+    fun setLanguage(view: FrameLayout, value: String?) {
+        props(view).language = value ?: "en"
+    }
+
+    @ReactProp(name = "showPointOnMap")
+    fun setShowPointOnMap(view: FrameLayout, value: String?) {
+        props(view).showOnMapStoreId = value
+    }
+
+    @ReactProp(name = "getRouteTo")
+    fun setGetRouteTo(view: FrameLayout, value: String?) {
+        props(view).getRouteStoreId = value
+    }
+
+    override fun onDropViewInstance(view: FrameLayout) {
+        super.onDropViewInstance(view)
+        val activity = reactContext.currentActivity as? FragmentActivity ?: return
+        val fm = activity.supportFragmentManager
+        if (fm.isDestroyed) return
+        fm.findFragmentByTag(tag(view))?.let { fm.beginTransaction().remove(it).commitNowAllowingStateLoss() }
+    }
+
+    private fun props(view: FrameLayout) = view.getTag(R.id.poilabs_map_props) as MapProps
+
+    private fun tag(view: FrameLayout) = "poilabs_map_${view.id}"
+
+    private fun attachFragment(root: FrameLayout) {
+        val activity = reactContext.currentActivity as? FragmentActivity ?: return
+        if (activity.isFinishing || activity.isDestroyed || !root.isAttachedToWindow) return
+        val fm = activity.supportFragmentManager
+        if (fm.isDestroyed || fm.findFragmentByTag(tag(root)) != null) return
+        // Props are applied right after the view is created; wait one frame so they are set.
+        root.post {
+            if (!root.isAttachedToWindow || fm.isDestroyed || fm.findFragmentByTag(tag(root)) != null) return@post
+            val p = props(root)
+            layoutChildrenEveryFrame(root)
+            fm.beginTransaction()
+                .replace(root.id, PoiMapFragment.newInstance(p.language, p.showOnMapStoreId, p.getRouteStoreId), tag(root))
+                .commitNowAllowingStateLoss()
+        }
+    }
+
+    // React Native does not lay out native child views, so the fragment's views are measured manually.
+    private fun layoutChildrenEveryFrame(view: ViewGroup) {
+        Choreographer.getInstance().postFrameCallback(object : Choreographer.FrameCallback {
+            override fun doFrame(frameTimeNanos: Long) {
+                if (!view.isAttachedToWindow) return
+                for (i in 0 until view.childCount) {
+                    val child = view.getChildAt(i)
+                    child.measure(
+                        View.MeasureSpec.makeMeasureSpec(view.measuredWidth, View.MeasureSpec.EXACTLY),
+                        View.MeasureSpec.makeMeasureSpec(view.measuredHeight, View.MeasureSpec.EXACTLY)
+                    )
+                    child.layout(0, 0, child.measuredWidth, child.measuredHeight)
+                }
+                view.viewTreeObserver.dispatchOnGlobalLayout()
+                Choreographer.getInstance().postFrameCallback(this)
+            }
+        })
+    }
+
+    companion object {
+        const val REACT_CLASS = "PoiMapViewManager"
+        private const val COMMAND_CREATE = 1
+    }
 }
 ```
 
-**MainActivity.kt**
+Create `android/app/src/main/res/layout/fragment_poi_map.xml`:
 
-Pass `false` instead of `fabricEnabled`:
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mapLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
+```
+
+Create `android/app/src/main/res/values/ids.xml`:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="poilabs_map_props" type="id" />
+</resources>
+```
+
+Register the package in **MainApplication.kt**:
 
 ```kotlin
-override fun createReactActivityDelegate(): ReactActivityDelegate =
-    DefaultReactActivityDelegate(this, mainComponentName, false)
-```
-
-Also remove the `fabricEnabled` import:
-
-```kotlin
-// remove this line
-import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
-```
-
-**PoiMapViewManager.java**
-
-Move `language`, `showOnMapStoreId`, `getRouteStoreId` out of instance fields into a per-view `MapState`. With New Architecture, props and the `create` command can arrive in a different order — per-view state ensures each view always uses its own props:
-
-```java
-private static final Map<Integer, MapState> viewStates = new ConcurrentHashMap<>();
-
-private static class MapState {
-    String language = "en";
-    String showOnMapStoreId;
-    String getRouteStoreId;
-}
-
-@NonNull
-private MapState getState(@NonNull FrameLayout view) {
-    return viewStates.computeIfAbsent(view.getId(), id -> new MapState());
+override val reactHost: ReactHost by lazy {
+  getDefaultReactHost(
+    context = applicationContext,
+    packageList =
+      PackageList(this).packages.apply {
+        add(PoilabsPackage())
+      },
+  )
 }
 ```
 
-Update `createViewInstance` to initialise the state for the new view:
+### Upgrading from the old guide
 
-```java
-viewStates.put(frameLayout.getId(), new MapState());
-```
-
-Update `onDropViewInstance` to clean it up:
-
-```java
-viewStates.remove(droppedViewId);
-```
-
-Update each `@ReactProp` setter to write into the per-view state and retry attachment:
-
-```java
-@ReactProp(name = "language")
-public void setLanguage(FrameLayout view, String value) {
-    getState(view).language = value == null ? "en" : value;
-    tryAttachFragment(view, "setLanguage");
-}
-
-@ReactProp(name = "showPointOnMap")
-public void setShowPointOnMap(FrameLayout view, String value) {
-    getState(view).showOnMapStoreId = value;
-    tryAttachFragment(view, "setShowPointOnMap");
-}
-
-@ReactProp(name = "getRouteTo")
-public void setGetRouteTo(FrameLayout view, String value) {
-    getState(view).getRouteStoreId = value;
-    tryAttachFragment(view, "setGetRouteTo");
-}
-```
-
-Update the `tryAttachFragment` signature to accept a `source` string (used for logging), then read from the state map when creating the fragment:
-
-```java
-// update method signature
-private void tryAttachFragment(@NonNull FrameLayout root, @NonNull String source) { ... }
-
-// inside the method, replace instance field usage with:
-MapState state = getState(root);
-final PoiMapFragment poiMapFragment =
-    PoiMapFragment.newInstance(state.language, state.showOnMapStoreId, state.getRouteStoreId);
-```
+- Replace the old Java files (`PoilabsPackage`, `PoiMapModule`, `PoiMapFragment`, `PoiMapViewManager`) with the Kotlin files above. `androidx.localbroadcastmanager` is no longer needed.
+- You can remove the `libc++_shared.so` `afterEvaluate` workaround and the `packagingOptions { jniLibs { useLegacyPackaging true } }` block that the old guide added for Mapbox.
+- You do not need to disable Fabric or Bridgeless; the map works with the New Architecture.
+- Since SDK 8.0.0 `PoiNavigation.OnNavigationReady` is a Kotlin interface: `onReady(mapFragment: MapFragment)` and `onStatusChanged(plpStatus: PLPStatus)` take non-null parameters. Kotlin code that overrides them with `MapFragment?` / `PLPStatus?` reports *"overrides nothing"*.
 
 ---
 
 ## React Native
 
-You should import **NativeModules**
-
 ### iOS
 
-Create a js file called **MapView.js**
+Create a js file called **MapView.js**:
 
 ```js
 // MapView.js
@@ -1236,48 +603,33 @@ import { requireNativeComponent } from 'react-native';
 module.exports = requireNativeComponent('PoilabsNavigationMap');
 ```
 
-Import MapView.js to file which is using Map.
+Then add the map:
 
 ```js
 import MapView from './MapView.js';
+
+<MapView language={"en"} style={{ flex: 1 }} />
 ```
 
-Then you can add MapView like below.
+To start the map by showing a point, pass a store id with `showOnMap`. To start with a route, pass it with `getRouteTo`:
 
 ```js
-<MapView style={{ flex: 1}}/>
+<MapView language={"en"} showOnMap={"store_id"} style={{ flex: 1 }} />
+<MapView language={"en"} getRouteTo={"store_id"} style={{ flex: 1 }} />
 ```
 
-If you want to choose language of PoilabsNavigation. You can pass "tr" or "en" by MapView. 
+After the map is open, you can show a point or start a route:
 
 ```js
-<MapView language={"en"} style={{ flex: 1}}/>
-```
+import { NativeModules } from 'react-native';
 
-If you want to start map with showing a point on map. You can pass store_id to MapView.
-
-```js
-<MapView language={"en"} showOnMap={"store_id"} style={{ flex: 1}}/>
-```
-If you want to start map with a route. You can pass store_id to MapView.
-
-```js
-<MapView language={"en"} getRouteTo={"store_id"} style={{ flex: 1}}/>
-```
-
-#### Post operations
-
-You can show a point or you can get route to a point after map's initialization. 
-
-```js
 NativeModules.PoilabsNavigationBridge.showPointOnMap("store_id");
-...
 NativeModules.PoilabsNavigationBridge.getRouteTo("store_id");
 ```
 
 ### Android
 
-Create a js file called **PoiMapViewManager.js**
+Create a js file called **PoiMapViewManager.js**:
 
 ```js
 //PoiMapViewManager.js
@@ -1288,7 +640,7 @@ export const PoiMapViewManager = requireNativeComponent(
 );
 ```
 
-Create a js file called **PoiMapView.js**
+Create a js file called **PoiMapView.js**:
 
 ```js
 import React, { useEffect, useRef } from 'react';
@@ -1326,44 +678,30 @@ export const PoiMapView = (props) => {
 };
 ```
 
-Import PoiMapView.js to file which is using Map.
+> The `create` command is optional with the Kotlin `PoiMapViewManager` above (the map attaches automatically); it is kept so existing apps keep working.
+
+Then add the map:
 
 ```js
 import { PoiMapView } from './PoiMapView.js';
 
-const { PoiMapModule } = NativeModules;
+<PoiMapView language={"en"} />
 ```
 
-Then you can add PoiMapView like below.
+To start the map by showing a point, pass a store id with `showPointOnMap`. To start with a route, pass it with `getRouteTo`:
 
 ```js
-<PoiMapView/>
+<PoiMapView language={"en"} showPointOnMap={"store_id"} />
+<PoiMapView language={"en"} getRouteTo={"store_id"} />
 ```
 
-If you want to choose language of PoilabsNavigation. You can pass "tr" or "en" by MapView. 
+After the map is open, you can show points or start a route:
 
 ```js
-<PoiMapView language={"en"}/>
-```
+import { NativeModules } from 'react-native';
 
-If you want to start map with showing a point on map. You can pass store_id to PoiMapView.
-
-```js
-<PoiMapView language={"en"} showPointOnMap={"store_id"}/>
-```
-If you want to start map with a route. You can pass store_id to PoiMapView.
-
-```js
-<PoiMapView language={"en"} getRouteTo={"store_id"}/>
-```
-
-#### Post operations
-
-You can show a point or you can get route to a point after map's initialization. 
-
-```js
 NativeModules.PoiMapModule.showPointOnMap(["store_id"]);
-...
 NativeModules.PoiMapModule.getRouteTo("store_id");
 ```
 
+Available languages: `en`, `tr`, `hr`, `ar`, `de`, `ru`, `pl`.
