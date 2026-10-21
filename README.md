@@ -10,7 +10,7 @@ This guide shows how to add the PoiLabs Navigation map to a React Native app. It
 
 | | iOS | Android |
 |---|---|---|
-| PoilabsNavigation | 7.3.1 | 8.1.0 |
+| PoilabsNavigation | 7.3.1 | 8.1.1 |
 | Minimum OS | iOS 14.0 | Android 7.0 (API 24) |
 | Installation | Swift Package Manager | Gradle (JitPack) |
 | Other | | Compile SDK 35+, JDK 17 |
@@ -259,7 +259,7 @@ android {
 
 dependencies {
     // ...
-    implementation "com.github.poiteam:Android-Navigation-SDK:8.1.0"
+    implementation "com.github.poiteam:Android-Navigation-SDK:8.1.1"
 }
 ```
 
