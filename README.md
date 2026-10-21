@@ -109,7 +109,12 @@ class NavigationView: UIView {
     let place = (placeId as String?)?.trimmingCharacters(in: .whitespaces) ?? ""
     settings?.placeId = place.isEmpty ? nil : place
 
-    PLNavigationManager.sharedInstance()?.getReadyForStoreMap(completionHandler: { [weak self] (error) in
+    let manager = PLNavigationManager.sharedInstance()
+    // The manager is shared and still holds the previous venue's stores. Clear them so the new map
+    // waits for this venue's stores instead of listing the previous venue's stores in search.
+    manager?.pois = nil
+
+    manager?.getReadyForStoreMap(completionHandler: { [weak self] (error) in
       guard let self = self, self.currentCarrier == nil else { return }
       if let error = error {
         print("PoiLabs SDK init failed: \(error)")
@@ -704,6 +709,8 @@ Normally the SDK opens the venue defined for your application: the configuration
 
 Every `placeId` you use must be enabled for your application by PoiLabs. Ask PoiLabs for the `placeId` values of your venues.
 
+On Android, switching venues needs **Android-Navigation-SDK 8.1.1 or later**. Earlier versions cached the venue map without its `placeId`, so the next venue opened with the previous venue's map.
+
 Pass the venue with the `placeId` prop, on both platforms:
 
 ```js
@@ -756,7 +763,8 @@ What the native code does with `placeId` (already included in the files above):
 
 | | Android (`PoiMapView.kt`) | iOS (`NavigationView.swift`) |
 |---|---|---|
-| Release the previous map | `PoiNavigation.getInstance().clearResources()` | The SDK stops when the old map view is removed |
+| Release the previous map | `PoiNavigation.getInstance().clearResources()` | The old `PLNNavigationMapView` is removed together with the React view |
+| Clear the previous venue's stores | Done by `clearResources()` | `PLNavigationManager.sharedInstance().pois = nil` |
 | Pass the venue | `PoiNavigation.getInstance(context, language, config, placeId)` | `PLNNavigationSettings.sharedInstance().placeId = placeId` (or `nil`), then `getReadyForStoreMap` |
 
-On iOS, `placeId` must be set before every `getReadyForStoreMap` call, also to `nil` for the default venue: the settings object is shared and otherwise keeps the venue opened last.
+On iOS, `placeId` must be set before every `getReadyForStoreMap` call, also to `nil` for the default venue: the settings object is shared and otherwise keeps the venue opened last. For the same reason, set `PLNavigationManager.sharedInstance().pois` to `nil` before the call; otherwise search and categories can list the previous venue's stores.
