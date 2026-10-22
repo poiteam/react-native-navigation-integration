@@ -12,7 +12,7 @@ If your application has more than one venue, you can open each of them with the 
 
 | | iOS | Android |
 |---|---|---|
-| PoilabsNavigation | 7.3.1 | 8.1.1 |
+| PoilabsNavigation | 7.3.1 | 8.1.2 |
 | Minimum OS | iOS 14.0 | Android 7.0 (API 24) |
 | Installation | Swift Package Manager | Gradle (JitPack) |
 | Other | | Compile SDK 35+, JDK 17 |
@@ -283,7 +283,7 @@ android {
 
 dependencies {
     // ...
-    implementation "com.github.poiteam:Android-Navigation-SDK:8.1.1"
+    implementation "com.github.poiteam:Android-Navigation-SDK:8.1.2"
 }
 ```
 
