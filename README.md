@@ -12,7 +12,7 @@ If your application has more than one venue, you can open each of them with the 
 
 | | iOS | Android |
 |---|---|---|
-| PoilabsNavigation | 7.3.1 | 8.1.2 |
+| PoilabsNavigation | 7.3.2 | 8.1.2 |
 | Minimum OS | iOS 14.0 | Android 7.0 (API 24) |
 | Installation | Swift Package Manager | Gradle (JitPack) |
 | Other | | Compile SDK 35+, JDK 17 |
@@ -30,7 +30,7 @@ PoilabsNavigation is distributed with **Swift Package Manager (SPM)**. CocoaPods
 1. Open `ios/YourAppName.xcworkspace` in Xcode.
 2. Select **File > Add Package Dependencies...**
 3. Enter the repository URL: `https://github.com/poiteam/ios-navigation-pod.git`
-4. Choose **Exact Version** `7.3.1` and add the **PoilabsNavigation** product to your **app target**.
+4. Choose **Exact Version** `7.3.2` and add the **PoilabsNavigation** product to your **app target**.
 
 The package contains everything the SDK needs: PoilabsNavigation, PoilabsMapView, PoilabsCommon and Mapbox Maps 11.18.0. PoilabsPositioning, PoilabsSdkAnalytics and PoilabsCore are resolved automatically. You do not need to add Mapbox or any other dependency yourself.
 
